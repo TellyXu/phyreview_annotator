@@ -80,18 +80,55 @@ const TraitWorkflow: React.FC<TraitWorkflowProps> = ({
       review_completed: progress.review_completed
     });
 
+    // 重要：防止阶段回退（例如从machine_evaluation回到human_annotation）
+    // 仅在以下情况允许状态转换：
+    // 1. 当前是初始阶段 (human_annotation)
+    // 2. 从低级阶段转到高级阶段
+    // 3. 特殊情况：如果当前阶段不合理（例如不匹配实际进度），则允许纠正
+    
+    const stageOrder: Record<WorkflowStage, number> = {
+      'human_annotation': 1,
+      'machine_evaluation': 2,
+      'review_and_modify': 3,
+      'completed': 4
+    };
+
+    // 根据进度确定理想阶段
+    let idealStage: WorkflowStage;
     if (progress.review_completed) {
-      newStage = 'completed';
+      idealStage = 'completed';
     } else if (progress.machine_evaluation_completed) {
-      newStage = 'review_and_modify';
+      idealStage = 'review_and_modify';
     } else if (progress.human_annotation_completed) {
-      newStage = 'machine_evaluation';
+      idealStage = 'machine_evaluation';
     } else {
-      newStage = 'human_annotation';
+      idealStage = 'human_annotation';
+    }
+    
+    // 决定是否需要阶段转换
+    if (
+      // 如果是朝着更高阶段前进，允许转换
+      stageOrder[idealStage] > stageOrder[oldStage] ||
+      // 如果当前是完成状态，但进度数据显示未完成，则纠正
+      (oldStage === 'completed' && !progress.review_completed) ||
+      // 如果当前阶段明显与进度不符（例如跳级），则纠正
+      (stageOrder[idealStage] - stageOrder[oldStage] > 1)
+    ) {
+      newStage = idealStage;
+      logDebug(`阶段转换决策: ${oldStage} -> ${newStage}`, {
+        reason: stageOrder[idealStage] > stageOrder[oldStage] ? "前进到更高阶段" : "纠正异常状态"
+      });
+    } else if (idealStage !== oldStage) {
+      // 拒绝回退
+      logDebug(`拒绝阶段回退: ${oldStage} -> ${idealStage}`, {
+        reason: "防止阶段回退",
+        currentStageOrder: stageOrder[oldStage],
+        idealStageOrder: stageOrder[idealStage]
+      });
     }
 
     if (oldStage !== newStage) {
-      logDebug(`阶段转换: ${oldStage} -> ${newStage}`);
+      logDebug(`执行阶段转换: ${oldStage} -> ${newStage}`);
       setCurrentStage(newStage);
       saveStage(newStage);
       
@@ -169,9 +206,23 @@ const TraitWorkflow: React.FC<TraitWorkflowProps> = ({
   // 人类标注完成回调
   const handleHumanAnnotationComplete = (updatedProgress: TraitProgress) => {
     logDebug('人类标注完成回调', updatedProgress);
-    onProgressUpdate(updatedProgress);
+    
+    // 确保进度数据中的human_annotation_completed为true
+    const correctedProgress = {
+      ...updatedProgress,
+      human_annotation_completed: true // 强制确保标记为已完成
+    };
+    
+    logDebug('纠正后的进度数据', correctedProgress);
+    onProgressUpdate(correctedProgress);
+    
+    // 显式设置阶段
     setCurrentStage('machine_evaluation');
     saveStage('machine_evaluation');
+    
+    // 额外保存到localStorage作为备份
+    localStorage.setItem(`stage_backup_${npi}_${taskId}_${trait}`, 'machine_evaluation');
+    localStorage.setItem(`progress_backup_${npi}_${taskId}_${trait}`, JSON.stringify(correctedProgress));
   };
 
   // 机器评价完成回调
