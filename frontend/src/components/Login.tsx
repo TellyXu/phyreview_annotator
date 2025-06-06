@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, Card, Typography, Alert } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const { Title } = Typography;
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
   const navigate = useNavigate();
+
+  // 检查API连接状态
+  useEffect(() => {
+    const checkApiConnection = async () => {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+      try {
+        await axios.get(`${API_URL}/physician/1659371102`);
+        setApiStatus('connected');
+      } catch (error) {
+        console.error('API connection check failed:', error);
+        setApiStatus('error');
+      }
+    };
+    
+    checkApiConnection();
+  }, []);
 
   const onFinish = (values: { username: string; npi: string; task_id: string }) => {
     setLoading(true);
@@ -33,6 +51,28 @@ const Login: React.FC = () => {
     }}>
       <Card style={{ width: 400, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
         <Title level={2} style={{ textAlign: 'center' }}>Physician Personality Trait Annotation</Title>
+        
+        {/* API连接状态提示 */}
+        {apiStatus === 'error' && (
+          <Alert
+            message="API Connection Error"
+            description={`Cannot connect to backend API. URL: ${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}`}
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
+        {apiStatus === 'connected' && (
+          <Alert
+            message="API Connected"
+            description="Backend API is reachable"
+            type="success"
+            showIcon
+            closable
+            style={{ marginBottom: 16 }}
+          />
+        )}
+        
         <Form
           name="login"
           layout="vertical"

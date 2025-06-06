@@ -5,6 +5,9 @@ import { submitTraitHumanAnnotation, getTraitProgress } from '../services/api';
 
 const { TextArea } = Input;
 
+// 从环境变量获取API URL，用于调试
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+
 interface HumanAnnotationFormProps {
   npi: string;
   taskId: number;
@@ -38,6 +41,7 @@ const HumanAnnotationForm: React.FC<HumanAnnotationFormProps> = ({
       };
 
       try {
+        console.log('Submitting annotation to API...', API_URL);
         await submitTraitHumanAnnotation(npi, taskId, trait, annotation);
         
         // 获取更新后的进度
@@ -45,8 +49,19 @@ const HumanAnnotationForm: React.FC<HumanAnnotationFormProps> = ({
         
         message.success('Human annotation submitted successfully!');
         onComplete(updatedProgress);
-      } catch (apiError) {
-        console.log('API call failed, continuing with local progress:', apiError);
+      } catch (apiError: any) {
+        console.error('API call failed:', apiError);
+        console.error('API URL:', API_URL);
+        console.error('Error details:', apiError.response?.data || apiError.message);
+        
+        // 显示具体的错误信息
+        if (apiError.response?.status === 404) {
+          message.error('API endpoint not found. Please check backend deployment.');
+        } else if (apiError.code === 'ERR_NETWORK') {
+          message.error('Network error. Please check if the backend is running.');
+        } else {
+          message.warning('Failed to connect to server. Using offline mode.');
+        }
         
         // 如果API失败，创建本地的进度状态
         const localProgress: TraitProgress = {
@@ -59,8 +74,10 @@ const HumanAnnotationForm: React.FC<HumanAnnotationFormProps> = ({
           review_completed: false
         };
         
-        message.success('Human annotation saved locally! (API temporarily unavailable)');
-        onComplete(localProgress);
+        // 延迟一下，确保用户看到消息
+        setTimeout(() => {
+          onComplete(localProgress);
+        }, 1000);
       }
     } catch (error) {
       console.error('Failed to submit human annotation:', error);

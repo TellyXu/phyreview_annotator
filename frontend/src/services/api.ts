@@ -18,6 +18,28 @@ const api = axios.create({
   },
 });
 
+// 添加响应拦截器用于调试
+api.interceptors.response.use(
+  (response) => {
+    // 成功响应
+    return response;
+  },
+  (error) => {
+    // 错误响应
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      baseURL: error.config?.baseURL,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    
+    // 继续抛出错误，让调用方处理
+    return Promise.reject(error);
+  }
+);
+
 // 根据NPI号码获取医生信息
 export const getPhysicianByNPI = async (npi: string): Promise<Physician> => {
   const response = await api.get(`/physician/${npi}`);
