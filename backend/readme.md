@@ -1,73 +1,73 @@
-# 后端 API 服务
+# Backend API Service
 
-医生人格特质标注系统的后端API服务，基于Go语言和Gin框架开发。
+Backend API service for the Physician Personality Trait Annotation System, built with Go and Gin framework.
 
-## 技术栈
+## Technology Stack
 
-- **语言**: Go 1.16+
-- **框架**: Gin Web Framework
-- **数据库**: PostgreSQL
-- **ORM**: 原生SQL查询
-- **HTTP路由**: Gin Router
+- **Language**: Go 1.16+
+- **Framework**: Gin Web Framework
+- **Database**: PostgreSQL
+- **ORM**: Native SQL queries
+- **HTTP Router**: Gin Router
 - **CORS**: gin-contrib/cors
 
-## 项目结构
+## Project Structure
 
 ```
 backend/
-├── cmd/                    # 命令行工具
-│   └── import/            # 数据导入工具
-├── controllers/           # API控制器
-│   └── physician.go       # 医生相关API
-├── db/                    # 数据库相关
-│   ├── database.go        # 数据库连接
-│   ├── init.sql          # 数据库初始化脚本
-│   └── *.sql             # 其他SQL脚本
-├── models/               # 数据模型
-│   └── models.go         # 数据结构定义
-├── routes/               # 路由配置
-│   └── routes.go         # API路由设置
-├── main.go              # 应用入口点
-└── go.mod               # Go模块依赖
+├── cmd/                    # Command line tools
+│   └── import/            # Data import tool
+├── controllers/           # API controllers
+│   └── physician.go       # Physician-related APIs
+├── db/                    # Database related
+│   ├── database.go        # Database connection
+│   ├── init.sql          # Database initialization script
+│   └── *.sql             # Other SQL scripts
+├── models/               # Data models
+│   └── models.go         # Data structure definitions
+├── routes/               # Route configuration
+│   └── routes.go         # API route setup
+├── main.go              # Application entry point
+└── go.mod               # Go module dependencies
 ```
 
-## 环境变量配置
+## Environment Variables Configuration
 
-在运行应用前，需要设置以下环境变量：
+Before running the application, you need to set the following environment variables:
 
 ```bash
-DB_HOST=localhost          # 数据库主机
-DB_PORT=5432              # 数据库端口
-DB_USER=your_username     # 数据库用户名
-DB_PASSWORD=your_password # 数据库密码
-DB_NAME=physicians        # 数据库名称
-DB_SSLMODE=disable        # SSL模式
+DB_HOST=localhost          # Database host
+DB_PORT=5432              # Database port
+DB_USER=your_username     # Database username
+DB_PASSWORD=your_password # Database password
+DB_NAME=physicians        # Database name
+DB_SSLMODE=disable        # SSL mode
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 安装依赖
+### 1. Install Dependencies
 
 ```bash
 cd backend
 go mod download
 ```
 
-### 2. 数据库设置
+### 2. Database Setup
 
-确保PostgreSQL已安装并运行，然后创建数据库：
+Ensure PostgreSQL is installed and running, then create the database:
 
 ```sql
 CREATE DATABASE physicians;
 ```
 
-### 3. 运行应用
+### 3. Run the Application
 
 ```bash
-# 使用环境变量启动
+# Start with environment variables
 DB_HOST=localhost DB_PORT=5432 DB_USER=your_user DB_PASSWORD=your_pass DB_NAME=physicians DB_SSLMODE=disable go run main.go
 
-# 或者设置环境变量后运行
+# Or set environment variables and then run
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_USER=your_user
@@ -77,120 +77,120 @@ export DB_SSLMODE=disable
 go run main.go
 ```
 
-应用将在 `http://localhost:8080` 启动。
+The application will start at `http://localhost:8080`.
 
-## API 接口文档
+## API Documentation
 
-### 基础信息
+### Base Information
 
 - **Base URL**: `http://localhost:8080/api`
 - **Content-Type**: `application/json`
 
-### 医生信息相关
+### Physician Information Endpoints
 
-#### 获取医生信息
+#### Get Physician Information
 ```
 GET /physician/{npi}
 ```
 
-**响应示例**:
+**Response Example**:
 ```json
 {
   "id": 1,
   "npi": 1234567890,
-  "first_name": "张",
-  "last_name": "医生",
-  "biography_doc": "<p>医生简介HTML内容</p>",
-  "education_doc": "<education>大学, 医学院, 毕业, 2000</education>",
+  "first_name": "John",
+  "last_name": "Doe",
+  "biography_doc": "<p>Physician biography HTML content</p>",
+  "education_doc": "<education>University, Medical School, Graduated, 2000</education>",
   "reviews": [...]
 }
 ```
 
-#### 获取任务信息
+#### Get Task Information
 ```
 GET /physician/{npi}/task/{taskID}?username={username}
 ```
 
-### 标注相关
+### Annotation Endpoints
 
-#### 提交人工标注
+#### Submit Human Annotation
 ```
 POST /physician/{npi}/task/{taskID}/trait/{trait}/human-annotation
 ```
 
-#### 获取机器标注
+#### Get Machine Annotations
 ```
 GET /physician/{npi}/task/{taskID}/trait/{trait}/machine-annotations
 ```
 
-#### 提交机器评估
+#### Submit Machine Evaluation
 ```
 POST /physician/{npi}/task/{taskID}/trait/{trait}/machine-evaluation
 ```
 
-#### 获取进度
+#### Get Progress
 ```
 GET /physician/{npi}/task/{taskID}/trait/{trait}/progress
 ```
 
-#### 获取历史记录
+#### Get History
 ```
 GET /physician/{npi}/task/{taskID}/trait/{trait}/history
 ```
 
-#### 完成特质评估
+#### Complete Trait Evaluation
 ```
 POST /physician/{npi}/task/{taskID}/trait/{trait}/complete
 ```
 
-## 数据模型
+## Data Models
 
-### 主要结构体
+### Main Structs
 
-- `Physician`: 医生信息
-- `Review`: 患者评论
-- `Task`: 标注任务
-- `HumanAnnotation`: 人工标注
-- `ModelAnnotation`: 模型标注
-- `MachineAnnotationEvaluation`: 机器标注评估
+- `Physician`: Physician information
+- `Review`: Patient reviews
+- `Task`: Annotation tasks
+- `HumanAnnotation`: Human annotations
+- `ModelAnnotation`: Model annotations
+- `MachineAnnotationEvaluation`: Machine annotation evaluations
 
-详细的数据库结构请参考 `../database/README.md`。
+For detailed database structure, see `../database/README.md`.
 
-## 开发特性
+## Development Features
 
-### CORS 支持
-API支持跨域请求，允许前端应用从不同端口访问。
+### CORS Support
+The API supports cross-origin requests, allowing frontend applications to access from different ports.
 
-### 错误处理
-所有API接口都包含适当的错误处理和HTTP状态码。
+### Error Handling
+All API endpoints include proper error handling and HTTP status codes.
 
-### 日志记录
-使用Gin的内置日志中间件记录请求信息。
+### Logging
+Uses Gin's built-in logging middleware to record request information.
 
-## 数据导入
+## Data Import
 
-项目包含数据导入工具：
+The project includes a data import tool:
 
 ```bash
 cd backend/cmd/import
 go run main.go
 ```
 
-该工具可以从JSON文件导入医生和评论数据。
+This tool can import physician and review data from JSON files.
 
-## 部署注意事项
+## Deployment Notes
 
-### 生产环境配置
+### Production Environment Configuration
 
-1. 设置 `GIN_MODE=release`
-2. 使用适当的数据库连接池设置
-3. 配置反向代理（如Nginx）
-4. 启用HTTPS
-5. 设置适当的CORS策略
+1. Set `GIN_MODE=release`
+2. Use appropriate database connection pool settings
+3. Configure reverse proxy (e.g., Nginx)
+4. Enable HTTPS
+5. Set appropriate CORS policies
 
-### Docker 部署
+### Docker Deployment
 
-可以创建Dockerfile进行容器化部署：
+You can create a Dockerfile for containerized deployment:
 
 ```dockerfile
 FROM golang:1.16-alpine
@@ -201,14 +201,14 @@ EXPOSE 8080
 CMD ["./main"]
 ```
 
-## 贡献指南
+## Contributing Guidelines
 
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
+1. Fork the project
+2. Create a feature branch
+3. Commit changes
+4. Push to the branch
+5. Create a Pull Request
 
-## 许可证
+## License
 
-本项目采用 MIT 许可证。
+This project is licensed under the MIT License.

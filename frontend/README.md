@@ -1,180 +1,180 @@
-# 前端应用
+# Frontend Application
 
-医生人格特质标注系统的前端应用，基于React和TypeScript开发。
+Frontend application for the Physician Personality Trait Annotation System, built with React and TypeScript.
 
-## 技术栈
+## Technology Stack
 
-- **框架**: React 18
-- **语言**: TypeScript
-- **UI库**: Ant Design
-- **状态管理**: React Hooks
-- **路由**: React Router
-- **HTTP客户端**: Axios
-- **样式**: CSS + Ant Design主题
+- **Framework**: React 18
+- **Language**: TypeScript
+- **UI Library**: Ant Design
+- **State Management**: React Hooks
+- **Router**: React Router
+- **HTTP Client**: Axios
+- **Styling**: CSS + Ant Design Theme
 
-## 项目结构
+## Project Structure
 
 ```
 frontend/
-├── public/              # 静态资源
-│   ├── index.html      # HTML模板
-│   └── favicon.ico     # 网站图标
-├── src/                # 源代码
-│   ├── components/     # 可复用组件
-│   │   ├── Login.tsx           # 登录组件
-│   │   ├── PhysicianInfo.tsx   # 医生信息展示
-│   │   ├── ReviewsList.tsx     # 评论列表
-│   │   ├── TraitTabs.tsx       # 特质标签页
-│   │   ├── TraitWorkflow.tsx   # 特质评估工作流
-│   │   ├── HumanAnnotationForm.tsx    # 人工标注表单
-│   │   ├── MachineEvaluationForm.tsx  # 机器评估表单
-│   │   └── ReviewAndModifyForm.tsx    # 审查修改表单
-│   ├── pages/          # 页面组件
-│   │   ├── HomePage.tsx        # 首页
-│   │   └── TaskPage.tsx        # 任务页面
-│   ├── services/       # API服务
-│   │   └── api.ts      # API接口封装
-│   ├── types/          # TypeScript类型定义
-│   │   └── index.ts    # 数据类型
-│   ├── App.tsx         # 根组件
-│   ├── App.css         # 全局样式
-│   └── index.tsx       # 应用入口
-├── package.json        # 项目依赖
-└── tsconfig.json      # TypeScript配置
+├── public/              # Static assets
+│   ├── index.html      # HTML template
+│   └── favicon.ico     # Website icon
+├── src/                # Source code
+│   ├── components/     # Reusable components
+│   │   ├── Login.tsx           # Login component
+│   │   ├── PhysicianInfo.tsx   # Physician info display
+│   │   ├── ReviewsList.tsx     # Reviews list
+│   │   ├── TraitTabs.tsx       # Trait tabs
+│   │   ├── TraitWorkflow.tsx   # Trait evaluation workflow
+│   │   ├── HumanAnnotationForm.tsx    # Human annotation form
+│   │   ├── MachineEvaluationForm.tsx  # Machine evaluation form
+│   │   └── ReviewAndModifyForm.tsx    # Review and modify form
+│   ├── pages/          # Page components
+│   │   ├── HomePage.tsx        # Home page
+│   │   └── TaskPage.tsx        # Task page
+│   ├── services/       # API services
+│   │   └── api.ts      # API interface encapsulation
+│   ├── types/          # TypeScript type definitions
+│   │   └── index.ts    # Data types
+│   ├── App.tsx         # Root component
+│   ├── App.css         # Global styles
+│   └── index.tsx       # Application entry
+├── package.json        # Project dependencies
+└── tsconfig.json      # TypeScript configuration
 ```
 
-## 主要功能
+## Main Features
 
-### 1. 用户登录
-- 用户名输入
-- NPI号码和任务ID验证
-- 会话管理
+### 1. User Login
+- Username input
+- NPI number and task ID validation
+- Session management
 
-### 2. 医生信息展示
-- 医生基本信息展示
-- **HTML内容渲染**: 支持医生简介中的HTML标签显示
-- **教育背景解析**: 自动解析`<education>`标签并格式化显示
-- 响应式布局设计
+### 2. Physician Information Display
+- Basic information display
+- **HTML Content Rendering**: Supports HTML tag display in physician biographies
+- **Education Background Parsing**: Automatically parses and formats `<education>` tags
+- Responsive layout design
 
-### 3. 患者评论浏览
-- 评论列表展示
-- 评论元数据解析
-- 滚动浏览功能
+### 3. Patient Review Browsing
+- Review list display
+- Review metadata parsing
+- Scroll browsing functionality
 
-### 4. 人格特质标注
-- 大五人格特质评估（开放性、尽责性、外向性、宜人性、神经质）
-- 分数评定和一致性评估
-- 证据文本输入
+### 4. Personality Trait Annotation
+- Big Five personality trait assessment (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism)
+- Score rating and consistency evaluation
+- Evidence text input
 
-### 5. 机器学习模型评估
-- 多模型结果展示
-- 模型排序功能
-- 评估反馈收集
+### 5. Machine Learning Model Evaluation
+- Multi-model results display
+- Model ranking functionality
+- Evaluation feedback collection
 
-## 快速开始
+## Quick Start
 
-### 前提条件
+### Prerequisites
 
 - Node.js 14+
-- npm 或 yarn
+- npm or yarn
 
-### 1. 安装依赖
+### 1. Install Dependencies
 
 ```bash
 cd frontend
 npm install
 ```
 
-### 2. 环境配置
+### 2. Environment Configuration
 
-创建 `.env` 文件（可选）：
+Create `.env` file (optional):
 
 ```bash
 REACT_APP_API_URL=http://localhost:8080/api
 ```
 
-### 3. 启动开发服务器
+### 3. Start Development Server
 
 ```bash
 npm start
 ```
 
-应用将在 [http://localhost:3000](http://localhost:3000) 启动。
+The application will start at [http://localhost:3000](http://localhost:3000).
 
-页面会在你编辑文件时自动重新加载。
+The page will automatically reload when you edit files.
 
-## 可用脚本
+## Available Scripts
 
 ### `npm start`
-启动开发模式，在 [http://localhost:3000](http://localhost:3000) 查看应用。
+Starts the development mode at [http://localhost:3000](http://localhost:3000).
 
 ### `npm test`
-启动测试运行器。
+Launches the test runner.
 
 ### `npm run build`
-构建生产版本到 `build` 文件夹。
+Builds the production version to the `build` folder.
 
 ### `npm run eject`
-⚠️ **这是单向操作，无法撤销！**
+⚠️ **This is a one-way operation that cannot be undone!**
 
-## 特色功能
+## Key Features
 
-### HTML内容渲染
-- 使用 `dangerouslySetInnerHTML` 安全渲染医生简介
-- 自定义CSS样式美化HTML内容
-- 支持段落、粗体、链接等HTML标签
+### HTML Content Rendering
+- Uses `dangerouslySetInnerHTML` to safely render physician biographies
+- Custom CSS styles to beautify HTML content
+- Supports paragraph, bold, link, and other HTML tags
 
-### 教育背景解析
-- 正则表达式解析 `<education>` 标签
-- 列表格式展示教育经历
-- 卡片式布局增强可读性
+### Education Background Parsing
+- Regular expression parsing of `<education>` tags
+- List format display of educational experiences
+- Card-style layout for enhanced readability
 
-### 响应式设计
-- 左右分栏布局（评论 + 标注界面）
-- 自适应屏幕尺寸
-- 移动端友好设计
+### Responsive Design
+- Two-column layout (reviews + annotation interface)
+- Adaptive to screen sizes
+- Mobile-friendly design
 
-### 用户体验优化
-- 加载状态指示
-- 错误处理和友好提示
-- 进度跟踪和完成提示
-- 数据持久化（sessionStorage）
+### User Experience Optimization
+- Loading state indicators
+- Error handling and friendly prompts
+- Progress tracking and completion notifications
+- Data persistence (sessionStorage)
 
-## 组件说明
+## Component Description
 
-### 核心组件
+### Core Components
 
-- **Login**: 用户登录和身份验证
-- **PhysicianInfo**: 医生信息展示，支持HTML渲染
-- **ReviewsList**: 患者评论列表展示
-- **TraitTabs**: 五大人格特质标签页导航
-- **TraitWorkflow**: 单个特质的评估工作流
+- **Login**: User login and authentication
+- **PhysicianInfo**: Physician information display with HTML rendering support
+- **ReviewsList**: Patient review list display
+- **TraitTabs**: Big Five personality trait tab navigation
+- **TraitWorkflow**: Single trait evaluation workflow
 
-### 表单组件
+### Form Components
 
-- **HumanAnnotationForm**: 人工标注表单
-- **MachineEvaluationForm**: 机器学习模型评估表单
-- **ReviewAndModifyForm**: 标注审查和修改表单
+- **HumanAnnotationForm**: Human annotation form
+- **MachineEvaluationForm**: Machine learning model evaluation form
+- **ReviewAndModifyForm**: Annotation review and modification form
 
-## API集成
+## API Integration
 
-前端通过Axios与后端API通信：
+The frontend communicates with the backend API via Axios:
 
 ```typescript
-// 获取医生信息
+// Get physician information
 const physician = await getPhysicianByNPI(npi);
 
-// 提交人工标注
+// Submit human annotation
 await submitTraitHumanAnnotation(npi, taskId, trait, annotation);
 
-// 获取机器标注
+// Get machine annotations
 const machineAnnotations = await getTraitMachineAnnotations(npi, taskId, trait);
 ```
 
-## 样式定制
+## Style Customization
 
-### Ant Design主题
-项目使用Ant Design组件库，可以通过修改主题色彩来定制UI：
+### Ant Design Theme
+The project uses the Ant Design component library. You can customize the UI by modifying theme colors:
 
 ```css
 /* App.css */
@@ -188,36 +188,36 @@ const machineAnnotations = await getTraitMachineAnnotations(npi, taskId, trait);
 }
 ```
 
-### 自定义样式
-- 医生简介HTML内容样式
-- 评论列表自定义滚动条
-- 卡片阴影和间距优化
+### Custom Styles
+- Physician biography HTML content styles
+- Review list custom scrollbar
+- Card shadows and spacing optimization
 
-## 部署
+## Deployment
 
-### 构建生产版本
+### Build Production Version
 
 ```bash
 npm run build
 ```
 
-构建文件将输出到 `build/` 目录。
+Build files will be output to the `build/` directory.
 
-### 部署选项
+### Deployment Options
 
-1. **静态文件服务器**: 将build目录内容部署到任何静态文件服务器
-2. **Nginx**: 配置Nginx反向代理
-3. **Vercel/Netlify**: 一键部署到云平台
-4. **Docker**: 容器化部署
+1. **Static File Server**: Deploy build directory contents to any static file server
+2. **Nginx**: Configure Nginx reverse proxy
+3. **Vercel/Netlify**: One-click deployment to cloud platforms
+4. **Docker**: Containerized deployment
 
-## 贡献指南
+## Contributing Guidelines
 
-1. 遵循项目代码规范
-2. 使用TypeScript类型安全
-3. 组件应该是纯函数组件
-4. 使用Ant Design组件保持一致性
-5. 添加适当的错误处理
+1. Follow project code standards
+2. Use TypeScript type safety
+3. Components should be pure function components
+4. Use Ant Design components for consistency
+5. Add appropriate error handling
 
-## 许可证
+## License
 
-本项目采用 MIT 许可证。
+This project is licensed under the MIT License.
