@@ -99,10 +99,10 @@ const TaskPage: React.FC = () => {
   }
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Content style={{ padding: '24px', maxWidth: 1400, margin: '0 auto' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
+      <Content style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column', maxWidth: 1400, margin: '0 auto' }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexShrink: 0 }}>
           <Title level={2}>Physician Personality Trait Annotation Task</Title>
           <div>
             <span style={{ marginRight: 16 }}>Current User: {username}</span>
@@ -114,42 +114,40 @@ const TaskPage: React.FC = () => {
         </div>
 
         {/* Collapsible Physician Information */}
-        <Collapse defaultActiveKey={[]} style={{ marginBottom: 24 }}>
+        <Collapse defaultActiveKey={[]} style={{ marginBottom: 24, flexShrink: 0 }}>
           <Panel header="Physician Information" key="physician">
             <PhysicianInfo physician={physician} />
           </Panel>
         </Collapse>
         
         {/* Main Content - Left-Right Layout */}
-        <Row gutter={24} style={{ height: 'calc(100vh - 200px)' }}>
+        <Row gutter={24} style={{ flex: 1, overflow: 'hidden' }}>
           {/* Left Side - Patient Reviews (Fixed) */}
-          <Col span={12}>
+          <Col span={12} style={{ height: '100%' }}>
             <div style={{ 
               height: '100%', 
-              overflowY: 'auto', 
-              paddingRight: 8,
+              display: 'flex',
+              flexDirection: 'column',
               border: '1px solid #f0f0f0',
               borderRadius: 6,
-              padding: '16px 12px 16px 16px',
-              backgroundColor: '#fafafa'
+              padding: '16px',
+              backgroundColor: '#fafafa',
+              overflow: 'hidden'
             }}>
               <Title level={3} style={{ 
                 marginTop: 0, 
-                position: 'sticky', 
-                top: 0, 
-                background: '#fafafa', 
-                zIndex: 10, 
-                paddingBottom: 12,
                 marginBottom: 12,
+                paddingBottom: 12,
                 borderBottom: '1px solid #e8e8e8',
-                fontSize: '18px'
+                fontSize: '18px',
+                flexShrink: 0
               }}>
                 患者评论 ({physician.reviews?.length || 0})
               </Title>
               <div style={{ 
-                paddingRight: 4,
-                height: 'calc(100% - 60px)',
+                flex: 1,
                 overflowY: 'auto',
+                paddingRight: 4,
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#c1c1c1 transparent'
               }} className="reviews-container">
@@ -159,11 +157,10 @@ const TaskPage: React.FC = () => {
           </Col>
           
           {/* Right Side - Trait Tabs */}
-          <Col span={12}>
+          <Col span={12} style={{ height: '100%' }}>
             <div style={{ 
               height: '100%',
               overflowY: 'auto',
-              paddingLeft: 8,
               border: '1px solid #f0f0f0',
               borderRadius: 6,
               padding: 16

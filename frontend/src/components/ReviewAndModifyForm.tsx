@@ -139,15 +139,6 @@ const ReviewAndModifyForm: React.FC<ReviewAndModifyFormProps> = ({
           <Card 
             title="Your Human Annotation" 
             size="small"
-            extra={
-              <Button 
-                type="primary" 
-                icon={<EditOutlined />} 
-                onClick={handleModifyAnnotation}
-              >
-                Modify
-              </Button>
-            }
           >
             <div>
               <p><strong>Score:</strong> {humanAnnotation.score}/5</p>
@@ -207,9 +198,16 @@ const ReviewAndModifyForm: React.FC<ReviewAndModifyFormProps> = ({
         <Card title="Final Questions" size="small">
           <div style={{ marginBottom: '20px' }}>
             <h4>Do you want to modify your annotation?</h4>
-            <p style={{ color: '#666', fontSize: '14px' }}>
-              You can click the "Modify" button above to edit your human annotation if needed.
+            <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>
+              You can click the "Modify" button below to edit your human annotation if needed.
             </p>
+            <Button 
+              type="primary" 
+              icon={<EditOutlined />} 
+              onClick={handleModifyAnnotation}
+            >
+              Modify
+            </Button>
           </div>
 
           <div>
