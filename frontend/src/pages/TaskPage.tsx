@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Typography, Tabs, message, Spin, Button, Row, Col, Collapse } from 'antd';
+import { Layout, Typography, message, Spin, Button, Row, Col, Collapse } from 'antd';
 import PhysicianInfo from '../components/PhysicianInfo';
 import ReviewsList from '../components/ReviewsList';
-import AnnotationForm from '../components/AnnotationForm';
-import ModelEvaluationForm from '../components/ModelEvaluationForm';
-import { getPhysicianByNPI, getPhysicianTask, submitHumanAnnotations, submitModelRanking } from '../services/api';
-import { Physician, HumanAnnotation, ModelAnnotation, ModelRanking, Task } from '../types';
+import TraitTabs from '../components/TraitTabs';
+import { getPhysicianByNPI, getPhysicianTask } from '../services/api';
+import { Physician, Task, TraitType } from '../types';
 
 const { Content } = Layout;
 const { Title } = Typography;
-const { TabPane } = Tabs;
 const { Panel } = Collapse;
 
 const TaskPage: React.FC = () => {
@@ -19,9 +17,7 @@ const TaskPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [physician, setPhysician] = useState<Physician | null>(null);
   const [task, setTask] = useState<Task | null>(null);
-  const [modelAnnotations, setModelAnnotations] = useState<ModelAnnotation[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('annotation');
-  const [submittedAnnotation, setSubmittedAnnotation] = useState<boolean>(false);
+  const [completedTraits, setCompletedTraits] = useState<Set<TraitType>>(new Set());
   const username = sessionStorage.getItem('username') || '';
 
   useEffect(() => {
@@ -47,7 +43,6 @@ const TaskPage: React.FC = () => {
         // Get task information
         const taskData = await getPhysicianTask(npi, parseInt(taskId), username);
         setTask(taskData.task);
-        setModelAnnotations(taskData.model_annotations);
 
         setLoading(false);
       } catch (error) {
@@ -60,38 +55,23 @@ const TaskPage: React.FC = () => {
     fetchData();
   }, [npi, taskId, username, navigate]);
 
-  // Handle human annotation submission
-  const handleAnnotationSubmit = async (annotations: HumanAnnotation[]) => {
-    try {
-      setLoading(true);
-      await submitHumanAnnotations(annotations);
-      message.success('Annotation submitted successfully');
-      setSubmittedAnnotation(true);
-      setActiveTab('modelEvaluation');
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to submit annotation', error);
-      message.error('Failed to submit annotation, please try again later');
-      setLoading(false);
-    }
-  };
-
-  // Handle model ranking submission
-  const handleRankingSubmit = async (ranking: ModelRanking) => {
-    try {
-      setLoading(true);
-      await submitModelRanking(ranking);
-      message.success('Evaluation submitted successfully');
-      setLoading(false);
+  // Handle trait completion
+  const handleTraitComplete = (trait: TraitType) => {
+    setCompletedTraits(prev => new Set([...Array.from(prev), trait]));
+    
+    // Check if all traits are completed
+    const allTraits: TraitType[] = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'];
+    const newCompletedTraits = new Set([...Array.from(completedTraits), trait]);
+    
+    if (newCompletedTraits.size === allTraits.length) {
+      message.success('🎉 Congratulations! You have completed all personality trait annotations!');
       
       // Delay redirect to home page
       setTimeout(() => {
         navigate('/');
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to submit evaluation', error);
-      message.error('Failed to submit evaluation, please try again later');
-      setLoading(false);
+      }, 3000);
+    } else {
+      message.success(`✅ ${trait.charAt(0).toUpperCase() + trait.slice(1)} completed! ${allTraits.length - newCompletedTraits.size} traits remaining.`);
     }
   };
 
@@ -126,6 +106,9 @@ const TaskPage: React.FC = () => {
           <Title level={2}>Physician Personality Trait Annotation Task</Title>
           <div>
             <span style={{ marginRight: 16 }}>Current User: {username}</span>
+            <span style={{ marginRight: 16, color: '#52c41a' }}>
+              Completed: {completedTraits.size}/5 traits
+            </span>
             <Button type="link" onClick={handleLogout}>Logout</Button>
           </div>
         </div>
@@ -147,16 +130,35 @@ const TaskPage: React.FC = () => {
               paddingRight: 8,
               border: '1px solid #f0f0f0',
               borderRadius: 6,
-              padding: 16
+              padding: '16px 12px 16px 16px',
+              backgroundColor: '#fafafa'
             }}>
-              <Title level={3} style={{ marginTop: 0, position: 'sticky', top: 0, background: 'white', zIndex: 10, paddingBottom: 16 }}>
-                Patient Reviews ({physician.reviews?.length || 0})
+              <Title level={3} style={{ 
+                marginTop: 0, 
+                position: 'sticky', 
+                top: 0, 
+                background: '#fafafa', 
+                zIndex: 10, 
+                paddingBottom: 12,
+                marginBottom: 12,
+                borderBottom: '1px solid #e8e8e8',
+                fontSize: '18px'
+              }}>
+                患者评论 ({physician.reviews?.length || 0})
               </Title>
-              {physician.reviews && <ReviewsList reviews={physician.reviews} />}
+              <div style={{ 
+                paddingRight: 4,
+                height: 'calc(100% - 60px)',
+                overflowY: 'auto',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#c1c1c1 transparent'
+              }} className="reviews-container">
+                {physician.reviews && <ReviewsList reviews={physician.reviews} />}
+              </div>
             </div>
           </Col>
           
-          {/* Right Side - Annotation/Evaluation Tabs */}
+          {/* Right Side - Trait Tabs */}
           <Col span={12}>
             <div style={{ 
               height: '100%',
@@ -166,39 +168,14 @@ const TaskPage: React.FC = () => {
               borderRadius: 6,
               padding: 16
             }}>
-              <Tabs 
-                activeKey={activeTab} 
-                onChange={setActiveTab}
-                style={{ height: '100%' }}
-                tabBarStyle={{ position: 'sticky', top: 0, background: 'white', zIndex: 10 }}
-              >
-                <TabPane tab="Human Annotation" key="annotation">
-                  <div style={{ paddingTop: 16 }}>
-                    {physician.id && task && (
-                      <AnnotationForm 
-                        physicianId={physician.id} 
-                        taskId={task.id} 
-                        username={username} 
-                        onSubmit={handleAnnotationSubmit} 
-                      />
-                    )}
-                  </div>
-                </TabPane>
-                
-                <TabPane tab="Model Evaluation" key="modelEvaluation" disabled={!submittedAnnotation}>
-                  <div style={{ paddingTop: 16 }}>
-                    {physician.id && task && submittedAnnotation && (
-                      <ModelEvaluationForm 
-                        physicianId={physician.id} 
-                        taskId={task.id} 
-                        username={username} 
-                        modelAnnotations={modelAnnotations} 
-                        onSubmit={handleRankingSubmit} 
-                      />
-                    )}
-                  </div>
-                </TabPane>
-              </Tabs>
+              {task && (
+                <TraitTabs
+                  npi={npi || ''}
+                  taskId={task.id}
+                  username={username}
+                  onTraitComplete={handleTraitComplete}
+                />
+              )}
             </div>
           </Col>
         </Row>

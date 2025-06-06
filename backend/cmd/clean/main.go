@@ -1,0 +1,40 @@
+package main
+
+import (
+	"io/ioutil"
+	"log"
+	"path/filepath"
+
+	"github.com/joho/godotenv"
+	"github.com/phyreview_annotator/db"
+)
+
+func main() {
+	// 加载环境变量
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Println("Warning: .env file not found, using environment variables")
+	}
+
+	// 初始化数据库连接
+	db.InitDB()
+	defer db.CloseDB()
+
+	// 读取清空脚本
+	scriptPath := filepath.Join("..", "..", "db", "clean_database.sql")
+	scriptSQL, err := ioutil.ReadFile(scriptPath)
+	if err != nil {
+		log.Fatal("Failed to read clean script:", err)
+	}
+
+	log.Println("Starting database cleanup...")
+
+	// 执行清空脚本
+	_, err = db.DB.Exec(string(scriptSQL))
+	if err != nil {
+		log.Fatal("Failed to execute clean script:", err)
+	}
+
+	log.Println("Database cleanup completed successfully!")
+	log.Println("All data has been removed, but table structures remain.")
+}

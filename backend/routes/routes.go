@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/phyreview_annotator/controllers"
 )
 
@@ -31,16 +31,32 @@ func SetupRouter() *gin.Engine {
 	{
 		// 获取医生信息
 		api.GET("/physician/:npi", controllers.GetPhysicianByNPI)
-		
+
 		// 获取医生任务
 		api.GET("/physician/:npi/task/:taskID", controllers.GetPhysicianTask)
-		
-		// 提交人类标注
+
+		// 提交人类标注（旧版本，保持兼容性）
 		api.POST("/annotations", controllers.SubmitHumanAnnotation)
-		
-		// 提交模型排名
-		api.POST("/rankings", controllers.SubmitModelRanking)
+
+		// 新的trait相关路由
+		// 获取trait进度
+		api.GET("/physician/:npi/task/:taskID/trait/:trait/progress", controllers.GetTraitProgress)
+
+		// 提交单个trait的人类标注
+		api.POST("/physician/:npi/task/:taskID/trait/:trait/human-annotation", controllers.SubmitTraitHumanAnnotation)
+
+		// 获取指定trait的机器标注
+		api.GET("/physician/:npi/task/:taskID/trait/:trait/machine-annotations", controllers.GetTraitMachineAnnotations)
+
+		// 提交机器标注评价
+		api.POST("/physician/:npi/task/:taskID/trait/:trait/machine-evaluation", controllers.SubmitMachineAnnotationEvaluation)
+
+		// 获取trait历史数据
+		api.GET("/physician/:npi/task/:taskID/trait/:trait/history", controllers.GetTraitHistory)
+
+		// 完成trait回顾
+		api.POST("/physician/:npi/task/:taskID/trait/:trait/complete", controllers.CompleteTraitReview)
 	}
 
 	return r
-} 
+}

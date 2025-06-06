@@ -36,8 +36,9 @@ export interface Review {
 export interface Task {
   id: number;
   physician_id: number;
-  status: 'pending' | 'completed';
+  status: 'pending' | 'in_progress' | 'completed';
   assigned_to: string;
+  timestamp?: string;
 }
 
 // 模型标注类型
@@ -66,20 +67,57 @@ export interface HumanAnnotation {
   timestamp?: string;
 }
 
-// 模型排名类型
-export interface ModelRanking {
+// Trait进度追踪类型
+export interface TraitProgress {
   id?: number;
   physician_id: number;
   task_id: number;
   evaluator: string;
-  model_ranks: string; // JSON格式的模型排名
-  convinced: boolean;
-  error_model: string;
+  trait: TraitType;
+  human_annotation_completed: boolean;
+  machine_evaluation_completed: boolean;
+  review_completed: boolean;
   timestamp?: string;
 }
 
-// 特质类型
-export type TraitType = 'Openness' | 'Conscientiousness' | 'Extraversion' | 'Agreeableness' | 'Neuroticism';
+// 机器标注评价类型
+export interface MachineAnnotationEvaluation {
+  id?: number;
+  model_annotation_id: number;
+  physician_id: number;
+  task_id: number;
+  evaluator: string;
+  trait: TraitType;
+  model_name: string;
+  rating: 'thumb_up' | 'thumb_down' | 'just_soso';
+  comment: string;
+  timestamp?: string;
+}
+
+// 特质类型 (修改为小写以匹配后端)
+export type TraitType = 'openness' | 'conscientiousness' | 'extraversion' | 'agreeableness' | 'neuroticism';
+
+// 特质显示名称映射
+export const TRAIT_DISPLAY_NAMES: Record<TraitType, string> = {
+  'openness': 'Openness',
+  'conscientiousness': 'Conscientiousness', 
+  'extraversion': 'Extraversion',
+  'agreeableness': 'Agreeableness',
+  'neuroticism': 'Neuroticism'
+};
+
+// 工作流阶段类型
+export type WorkflowStage = 'human_annotation' | 'machine_evaluation' | 'review_and_modify' | 'completed';
+
+// 评价类型
+export type RatingType = 'thumb_up' | 'thumb_down' | 'just_soso';
+
+// 评价显示名称映射
+export const RATING_DISPLAY_NAMES: Record<RatingType, string> = {
+  'thumb_up': '👍 Good',
+  'thumb_down': '👎 Poor', 
+  'just_soso': '😐 Okay'
+};
 
 // 一致性类型
 export type ConsistencyType = 'Low' | 'Moderate' | 'High';
@@ -89,6 +127,15 @@ export type SufficiencyType = 'Low' | 'Moderate' | 'High';
 
 // 分数类型
 export type ScoreType = 'No Evidence' | 'Low' | 'Low to Moderate' | 'Moderate' | 'Moderate to High' | 'High';
+
+// Trait工作流状态
+export interface TraitWorkflowState {
+  progress: TraitProgress;
+  currentStage: WorkflowStage;
+  humanAnnotation?: HumanAnnotation;
+  machineAnnotations?: ModelAnnotation[];
+  machineEvaluations?: MachineAnnotationEvaluation[];
+}
 
 // 标注指南
 export const ANNOTATION_GUIDELINE = `
@@ -115,10 +162,10 @@ Output Instructions:
 `;
 
 // 大五人格特质描述
-export const TRAIT_DESCRIPTIONS = {
-  Openness: 'Openness refers to the individual\'s receptiveness to new experiences, ideas, and perspectives. People high in openness typically have curiosity, creativity, and imagination, and enjoy trying new things.',
-  Conscientiousness: 'Conscientiousness refers to the individual\'s self-discipline, sense of responsibility, and organizational skills. People high in conscientiousness are typically careful, reliable, organized, and follow rules and plans strictly.',
-  Extraversion: 'Extraversion refers to the individual\'s level of activity in social interactions and tendency to seek stimulation. People high in extraversion are typically energetic, talkative, confident, and enjoy interacting with others.',
-  Agreeableness: 'Agreeableness refers to the individual\'s friendliness and level of cooperation when interacting with others. People high in agreeableness typically trust others, are compassionate, understanding, and willing to help others.',
-  Neuroticism: 'Neuroticism refers to the individual\'s tendency to experience negative emotions and emotional stability. People high in neuroticism may be more prone to anxiety, irritability, depression, and have poorer ability to cope with stress.'
+export const TRAIT_DESCRIPTIONS: Record<TraitType, string> = {
+  openness: 'Openness refers to the individual\'s receptiveness to new experiences, ideas, and perspectives. People high in openness typically have curiosity, creativity, and imagination, and enjoy trying new things.',
+  conscientiousness: 'Conscientiousness refers to the individual\'s self-discipline, sense of responsibility, and organizational skills. People high in conscientiousness are typically careful, reliable, organized, and follow rules and plans strictly.',
+  extraversion: 'Extraversion refers to the individual\'s level of activity in social interactions and tendency to seek stimulation. People high in extraversion are typically energetic, talkative, confident, and enjoy interacting with others.',
+  agreeableness: 'Agreeableness refers to the individual\'s friendliness and level of cooperation when interacting with others. People high in agreeableness typically trust others, are compassionate, understanding, and willing to help others.',
+  neuroticism: 'Neuroticism refers to the individual\'s tendency to experience negative emotions and emotional stability. People high in neuroticism may be more prone to anxiety, irritability, depression, and have poorer ability to cope with stress.'
 }; 

@@ -1,10 +1,20 @@
 import React, { useState } from 'react';
 import { Card, Typography, Button, Row, Col, Select, Checkbox, Tag, Space } from 'antd';
 import { UpOutlined, DownOutlined } from '@ant-design/icons';
-import { ModelAnnotation, TraitType, ModelRanking } from '../types';
+import { ModelAnnotation, TraitType, TRAIT_DISPLAY_NAMES } from '../types';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
+
+// Temporary interface for compatibility
+interface ModelRanking {
+  physician_id: number;
+  task_id: number;
+  evaluator: string;
+  model_ranks: string;
+  convinced: boolean;
+  error_model: string;
+}
 
 interface ModelEvaluationFormProps {
   physicianId: number;
@@ -66,7 +76,7 @@ const groupAnnotationsByModel = (annotations: ModelAnnotation[]): ModelGroup[] =
 
 // Group model annotations by trait
 const groupAnnotationsByTrait = (annotations: ModelAnnotation[]): TraitGroup[] => {
-  const traits: TraitType[] = ['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism'];
+  const traits: TraitType[] = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'];
   
   return traits.map(trait => ({
     trait,
@@ -126,7 +136,7 @@ const ModelEvaluationForm: React.FC<ModelEvaluationFormProps> = ({
     return (
       <Card 
         key={traitGroup.trait}
-        title={<Title level={4} style={{ margin: 0 }}>{traitGroup.trait}</Title>}
+        title={<Title level={4} style={{ margin: 0 }}>{TRAIT_DISPLAY_NAMES[traitGroup.trait]}</Title>}
         style={{ marginBottom: 24 }}
       >
         {traitGroup.annotations.map((annotation, index) => (

@@ -274,43 +274,453 @@ func SubmitHumanAnnotation(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "标注提交成功"})
 }
 
-// SubmitModelRanking 提交模型排名
-func SubmitModelRanking(c *gin.Context) {
-	var ranking models.ModelRanking
-	if err := c.ShouldBindJSON(&ranking); err != nil {
+// GetTraitProgress 获取指定trait的进度状态
+func GetTraitProgress(c *gin.Context) {
+	npiStr := c.Param("npi")
+	taskIDStr := c.Param("taskID")
+	trait := c.Param("trait")
+	username := c.Query("username")
+
+	if username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少用户名参数"})
+		return
+	}
+
+	npi, err := strconv.ParseInt(npiStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的NPI号码"})
+		return
+	}
+
+	taskID, err := strconv.Atoi(taskIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的任务ID"})
+		return
+	}
+
+	// 获取医生ID
+	var physicianID int
+	err = db.DB.QueryRow("SELECT id FROM physicians WHERE npi = $1", npi).Scan(&physicianID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "未找到该医生信息"})
+		return
+	}
+
+	// 查询trait进度 - 如果表不存在或记录不存在，返回默认进度
+	var progress models.TraitProgress
+	err = db.DB.QueryRow(`
+		SELECT id, physician_id, task_id, evaluator, trait, 
+		human_annotation_completed, machine_evaluation_completed, review_completed, timestamp
+		FROM trait_progress 
+		WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+	`, physicianID, taskID, username, trait).Scan(
+		&progress.ID, &progress.PhysicianID, &progress.TaskID, &progress.Evaluator,
+		&progress.Trait, &progress.HumanAnnotationCompleted, &progress.MachineEvaluationCompleted,
+		&progress.ReviewCompleted, &progress.Timestamp,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// 如果记录不存在，返回默认进度（不尝试创建）
+			progress = models.TraitProgress{
+				PhysicianID:                physicianID,
+				TaskID:                     taskID,
+				Evaluator:                  username,
+				Trait:                      trait,
+				HumanAnnotationCompleted:   false,
+				MachineEvaluationCompleted: false,
+				ReviewCompleted:            false,
+			}
+		} else {
+			// 如果是其他错误（比如表不存在），也返回默认进度
+			log.Println("查询trait进度错误 (使用默认值):", err)
+			progress = models.TraitProgress{
+				PhysicianID:                physicianID,
+				TaskID:                     taskID,
+				Evaluator:                  username,
+				Trait:                      trait,
+				HumanAnnotationCompleted:   false,
+				MachineEvaluationCompleted: false,
+				ReviewCompleted:            false,
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, progress)
+}
+
+// SubmitTraitHumanAnnotation 提交单个trait的人类标注
+func SubmitTraitHumanAnnotation(c *gin.Context) {
+	npiStr := c.Param("npi")
+	taskIDStr := c.Param("taskID")
+	trait := c.Param("trait")
+
+	npi, err := strconv.ParseInt(npiStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的NPI号码"})
+		return
+	}
+
+	taskID, err := strconv.Atoi(taskIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的任务ID"})
+		return
+	}
+
+	// 获取医生ID
+	var physicianID int
+	err = db.DB.QueryRow("SELECT id FROM physicians WHERE npi = $1", npi).Scan(&physicianID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "未找到该医生信息"})
+		return
+	}
+
+	var annotation models.HumanAnnotation
+	if err := c.ShouldBindJSON(&annotation); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ranking.Timestamp = time.Now()
-
-	// 插入或更新排名
-	_, err := db.DB.Exec(`
-		INSERT INTO model_rankings 
-		(physician_id, task_id, evaluator, model_ranks, convinced, error_model, timestamp)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		ON CONFLICT (physician_id, task_id, evaluator) 
-		DO UPDATE SET 
-		model_ranks = EXCLUDED.model_ranks,
-		convinced = EXCLUDED.convinced,
-		error_model = EXCLUDED.error_model,
-		timestamp = EXCLUDED.timestamp
-	`,
-		ranking.PhysicianID, ranking.TaskID, ranking.Evaluator,
-		ranking.ModelRanks, ranking.Convinced, ranking.ErrorModel, ranking.Timestamp)
-
+	// 开始事务
+	tx, err := db.DB.Begin()
 	if err != nil {
-		log.Println("插入排名错误:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "保存排名数据出错"})
+		log.Println("开始事务错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "数据库事务错误"})
 		return
 	}
 
-	// 更新任务状态为已完成
-	_, err = db.DB.Exec("UPDATE tasks SET status = 'completed' WHERE id = $1 AND physician_id = $2",
-		ranking.TaskID, ranking.PhysicianID)
+	// 插入或更新人类标注
+	_, err = tx.Exec(`
+		INSERT INTO human_annotations 
+		(physician_id, evaluator, task_id, trait, score, consistency, sufficiency, evidence, timestamp)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		ON CONFLICT (physician_id, evaluator, task_id, trait) 
+		DO UPDATE SET 
+		score = EXCLUDED.score, 
+		consistency = EXCLUDED.consistency,
+		sufficiency = EXCLUDED.sufficiency,
+		evidence = EXCLUDED.evidence,
+		timestamp = EXCLUDED.timestamp
+	`,
+		physicianID, annotation.Evaluator, taskID, trait,
+		annotation.Score, annotation.Consistency, annotation.Sufficiency,
+		annotation.Evidence, time.Now())
+
 	if err != nil {
-		log.Println("更新任务状态错误:", err)
+		tx.Rollback()
+		log.Println("插入标注错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "保存标注数据出错"})
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "排名提交成功"})
+	// 更新trait进度
+	_, err = tx.Exec(`
+		UPDATE trait_progress 
+		SET human_annotation_completed = true, timestamp = $1
+		WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
+	`, time.Now(), physicianID, taskID, annotation.Evaluator, trait)
+
+	if err != nil {
+		tx.Rollback()
+		log.Println("更新trait进度错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新进度出错"})
+		return
+	}
+
+	// 提交事务
+	err = tx.Commit()
+	if err != nil {
+		log.Println("提交事务错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "提交事务出错"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "标注提交成功"})
+}
+
+// GetTraitMachineAnnotations 获取指定trait的所有机器标注
+func GetTraitMachineAnnotations(c *gin.Context) {
+	npiStr := c.Param("npi")
+	trait := c.Param("trait")
+
+	npi, err := strconv.ParseInt(npiStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的NPI号码"})
+		return
+	}
+
+	// 获取医生ID
+	var physicianID int
+	err = db.DB.QueryRow("SELECT id FROM physicians WHERE npi = $1", npi).Scan(&physicianID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "未找到该医生信息"})
+		return
+	}
+
+	// 查询指定trait的机器标注
+	rows, err := db.DB.Query(`
+		SELECT id, model_name, trait, score, consistency, sufficiency, evidence
+		FROM model_annotations
+		WHERE physician_id = $1 AND trait = $2
+		ORDER BY model_name
+	`, physicianID, trait)
+
+	annotations := []models.ModelAnnotation{}
+
+	if err != nil {
+		log.Println("查询机器标注错误 (返回空数组):", err)
+		// 如果查询失败（比如表不存在），返回空数组而不是错误
+		c.JSON(http.StatusOK, annotations)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var annotation models.ModelAnnotation
+		err := rows.Scan(
+			&annotation.ID, &annotation.ModelName, &annotation.Trait,
+			&annotation.Score, &annotation.Consistency, &annotation.Sufficiency,
+			&annotation.Evidence,
+		)
+		if err != nil {
+			log.Println("扫描机器标注数据错误:", err)
+			continue
+		}
+		annotation.PhysicianID = physicianID
+		annotations = append(annotations, annotation)
+	}
+
+	c.JSON(http.StatusOK, annotations)
+}
+
+// SubmitMachineAnnotationEvaluation 提交对机器标注的评价
+func SubmitMachineAnnotationEvaluation(c *gin.Context) {
+	npiStr := c.Param("npi")
+	taskIDStr := c.Param("taskID")
+	trait := c.Param("trait")
+
+	npi, err := strconv.ParseInt(npiStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的NPI号码"})
+		return
+	}
+
+	taskID, err := strconv.Atoi(taskIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的任务ID"})
+		return
+	}
+
+	// 获取医生ID
+	var physicianID int
+	err = db.DB.QueryRow("SELECT id FROM physicians WHERE npi = $1", npi).Scan(&physicianID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "未找到该医生信息"})
+		return
+	}
+
+	var evaluations []models.MachineAnnotationEvaluation
+	if err := c.ShouldBindJSON(&evaluations); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 开始事务
+	tx, err := db.DB.Begin()
+	if err != nil {
+		log.Println("开始事务错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "数据库事务错误"})
+		return
+	}
+
+	for _, evaluation := range evaluations {
+		// 插入或更新机器标注评价
+		_, err := tx.Exec(`
+			INSERT INTO machine_annotation_evaluation
+			(model_annotation_id, physician_id, task_id, evaluator, trait, model_name, rating, comment, timestamp)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			ON CONFLICT (model_annotation_id, evaluator, task_id) 
+			DO UPDATE SET 
+			rating = EXCLUDED.rating,
+			comment = EXCLUDED.comment,
+			timestamp = EXCLUDED.timestamp
+		`,
+			evaluation.ModelAnnotationID, physicianID, taskID, evaluation.Evaluator,
+			trait, evaluation.ModelName, evaluation.Rating, evaluation.Comment, time.Now())
+
+		if err != nil {
+			tx.Rollback()
+			log.Println("插入机器标注评价错误:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "保存评价数据出错"})
+			return
+		}
+	}
+
+	// 更新trait进度
+	_, err = tx.Exec(`
+		UPDATE trait_progress 
+		SET machine_evaluation_completed = true, timestamp = $1
+		WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
+	`, time.Now(), physicianID, taskID, evaluations[0].Evaluator, trait)
+
+	if err != nil {
+		tx.Rollback()
+		log.Println("更新trait进度错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新进度出错"})
+		return
+	}
+
+	// 提交事务
+	err = tx.Commit()
+	if err != nil {
+		log.Println("提交事务错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "提交事务出错"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "评价提交成功"})
+}
+
+// GetTraitHistory 获取该trait的历史标注和评价
+func GetTraitHistory(c *gin.Context) {
+	npiStr := c.Param("npi")
+	taskIDStr := c.Param("taskID")
+	trait := c.Param("trait")
+	username := c.Query("username")
+
+	if username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少用户名参数"})
+		return
+	}
+
+	npi, err := strconv.ParseInt(npiStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的NPI号码"})
+		return
+	}
+
+	taskID, err := strconv.Atoi(taskIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的任务ID"})
+		return
+	}
+
+	// 获取医生ID
+	var physicianID int
+	err = db.DB.QueryRow("SELECT id FROM physicians WHERE npi = $1", npi).Scan(&physicianID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "未找到该医生信息"})
+		return
+	}
+
+	// 查询人类标注历史
+	var humanAnnotation models.HumanAnnotation
+	err = db.DB.QueryRow(`
+		SELECT id, physician_id, evaluator, task_id, trait, score, consistency, sufficiency, evidence, timestamp
+		FROM human_annotations
+		WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+	`, physicianID, taskID, username, trait).Scan(
+		&humanAnnotation.ID, &humanAnnotation.PhysicianID, &humanAnnotation.Evaluator,
+		&humanAnnotation.TaskID, &humanAnnotation.Trait, &humanAnnotation.Score,
+		&humanAnnotation.Consistency, &humanAnnotation.Sufficiency, &humanAnnotation.Evidence,
+		&humanAnnotation.Timestamp,
+	)
+
+	var hasHumanAnnotation bool
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("查询人类标注历史错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询历史数据出错"})
+		return
+	}
+	hasHumanAnnotation = (err == nil)
+
+	// 查询机器标注评价历史
+	rows, err := db.DB.Query(`
+		SELECT id, model_annotation_id, physician_id, task_id, evaluator, trait, model_name, rating, comment, timestamp
+		FROM machine_annotation_evaluation
+		WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+	`, physicianID, taskID, username, trait)
+	if err != nil {
+		log.Println("查询机器标注评价历史错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询评价历史出错"})
+		return
+	}
+	defer rows.Close()
+
+	evaluations := []models.MachineAnnotationEvaluation{}
+	for rows.Next() {
+		var evaluation models.MachineAnnotationEvaluation
+		err := rows.Scan(
+			&evaluation.ID, &evaluation.ModelAnnotationID, &evaluation.PhysicianID,
+			&evaluation.TaskID, &evaluation.Evaluator, &evaluation.Trait,
+			&evaluation.ModelName, &evaluation.Rating, &evaluation.Comment,
+			&evaluation.Timestamp,
+		)
+		if err != nil {
+			log.Println("扫描机器标注评价数据错误:", err)
+			continue
+		}
+		evaluations = append(evaluations, evaluation)
+	}
+
+	result := gin.H{
+		"machine_evaluations": evaluations,
+	}
+
+	if hasHumanAnnotation {
+		result["human_annotation"] = humanAnnotation
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// CompleteTraitReview 完成trait回顾阶段
+func CompleteTraitReview(c *gin.Context) {
+	npiStr := c.Param("npi")
+	taskIDStr := c.Param("taskID")
+	trait := c.Param("trait")
+
+	npi, err := strconv.ParseInt(npiStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的NPI号码"})
+		return
+	}
+
+	taskID, err := strconv.Atoi(taskIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的任务ID"})
+		return
+	}
+
+	// 获取医生ID
+	var physicianID int
+	err = db.DB.QueryRow("SELECT id FROM physicians WHERE npi = $1", npi).Scan(&physicianID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "未找到该医生信息"})
+		return
+	}
+
+	var requestData struct {
+		Evaluator string `json:"evaluator"`
+		Comment   string `json:"comment,omitempty"`
+	}
+	if err := c.ShouldBindJSON(&requestData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 更新trait进度为完成
+	_, err = db.DB.Exec(`
+		UPDATE trait_progress 
+		SET review_completed = true, timestamp = $1
+		WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
+	`, time.Now(), physicianID, taskID, requestData.Evaluator, trait)
+
+	if err != nil {
+		log.Println("完成trait回顾错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新进度出错"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "trait完成成功"})
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, InputNumber, Input, Button, Card, Typography, Row, Col, Slider, Modal, Divider, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { HumanAnnotation, TraitType, TRAIT_DESCRIPTIONS, ANNOTATION_GUIDELINE } from '../types';
+import { HumanAnnotation, TraitType, TRAIT_DESCRIPTIONS, ANNOTATION_GUIDELINE, TRAIT_DISPLAY_NAMES } from '../types';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -14,11 +14,11 @@ interface AnnotationFormProps {
 }
 
 const traits: TraitType[] = [
-  'Openness',
-  'Conscientiousness',
-  'Extraversion',
-  'Agreeableness',
-  'Neuroticism'
+  'openness',
+  'conscientiousness',
+  'extraversion',
+  'agreeableness',
+  'neuroticism'
 ];
 
 const marks = {
@@ -79,7 +79,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({ physicianId, taskId, us
             <Card
               title={
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <span>{trait}</span>
+                  <span>{TRAIT_DISPLAY_NAMES[trait]}</span>
                   <Tooltip title={TRAIT_DESCRIPTIONS[trait]}>
                     <InfoCircleOutlined style={{ marginLeft: 8 }} />
                   </Tooltip>
@@ -124,7 +124,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({ physicianId, taskId, us
                     label="Evidence"
                     rules={[{ required: true, message: 'Please provide evidence' }]}
                   >
-                    <TextArea rows={4} placeholder={`Please provide evidence and reasoning for ${trait}...`} />
+                    <TextArea rows={4} placeholder={`Please provide evidence and reasoning for ${TRAIT_DISPLAY_NAMES[trait]}...`} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -159,7 +159,7 @@ const AnnotationForm: React.FC<AnnotationFormProps> = ({ physicianId, taskId, us
         <Title level={5}>Trait Descriptions</Title>
         {traits.map(trait => (
           <div key={trait} style={{ marginBottom: 16 }}>
-            <Text strong>{trait}: </Text>
+            <Text strong>{TRAIT_DISPLAY_NAMES[trait]}: </Text>
             <Text>{TRAIT_DESCRIPTIONS[trait]}</Text>
           </div>
         ))}

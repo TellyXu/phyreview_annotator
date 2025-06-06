@@ -35,48 +35,86 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ reviews }) => {
   };
 
   return (
-    <List
-      dataSource={reviews}
-      renderItem={(review) => {
-        const { meta, content } = parseReviewMeta(review.text);
-        
-        // 从meta中提取信息
-        let metaInfo = meta;
-        let source = '';
-        
-        // 尝试提取来源和日期
-        if (meta) {
-          const sourceMatch = meta.match(/- ([A-Za-z]+)$/);
-          if (sourceMatch) {
-            source = sourceMatch[1];
+    <div style={{ 
+      height: '100%',
+      padding: 0,
+      margin: 0
+    }}>
+      <List
+        dataSource={reviews}
+        size="small"
+        split={false}
+        style={{ 
+          padding: 0,
+          margin: 0
+        }}
+        renderItem={(review) => {
+          const { meta, content } = parseReviewMeta(review.text);
+          
+          // 从meta中提取信息
+          let source = '';
+          
+          // 尝试提取来源和日期
+          if (meta) {
+            const sourceMatch = meta.match(/- ([A-Za-z]+)$/);
+            if (sourceMatch) {
+              source = sourceMatch[1];
+            }
           }
-        }
-        
-        return (
-          <List.Item style={{ marginBottom: 16 }}>
-            <Card 
-              type="inner" 
-              title={
-                <div>
-                  <Text strong>Review #{review.review_index}</Text>
-                  <Divider type="vertical" />
-                  <Text type="secondary">{formatDate(review.date)}</Text>
-                  {source && (
-                    <>
-                      <Divider type="vertical" />
-                      <Tag color="blue">{source}</Tag>
-                    </>
-                  )}
-                </div>
-              }
-              style={{ width: '100%' }}
-            >
-              <Text>{content}</Text>
-            </Card>
-          </List.Item>
-        );
-      }}
-    />
+          
+          return (
+            <List.Item style={{ 
+              marginBottom: 8,
+              padding: 0,
+              border: 'none'
+            }}>
+              <Card 
+                type="inner" 
+                size="small"
+                title={
+                  <div style={{ fontSize: '14px' }}>
+                    <Text strong>Review #{review.review_index}</Text>
+                    <Divider type="vertical" />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {formatDate(review.date)}
+                    </Text>
+                    {source && (
+                      <>
+                        <Divider type="vertical" />
+                        <Tag color="blue">{source}</Tag>
+                      </>
+                    )}
+                  </div>
+                }
+                style={{ 
+                  width: '100%',
+                  marginBottom: 0,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
+                }}
+                bodyStyle={{
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  lineHeight: '1.5'
+                }}
+                headStyle={{
+                  padding: '8px 16px',
+                  minHeight: 'auto',
+                  fontSize: '14px'
+                }}
+              >
+                <Text style={{ 
+                  display: 'block',
+                  lineHeight: '1.5',
+                  color: '#333'
+                }}>
+                  {content}
+                </Text>
+              </Card>
+            </List.Item>
+          );
+        }}
+      />
+    </div>
   );
 };
 
