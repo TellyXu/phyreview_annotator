@@ -306,7 +306,7 @@ func GetTraitProgress(c *gin.Context) {
 		return
 	}
 
-	// 查询trait进度 - 如果表不存在或记录不存在，返回默认进度
+	// 查询trait进度
 	var progress models.TraitProgress
 	err = db.DB.QueryRow(`
 		SELECT id, physician_id, task_id, evaluator, trait, 
@@ -321,18 +321,124 @@ func GetTraitProgress(c *gin.Context) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// 如果记录不存在，返回默认进度（不尝试创建）
-			progress = models.TraitProgress{
-				PhysicianID:                physicianID,
-				TaskID:                     taskID,
-				Evaluator:                  username,
-				Trait:                      trait,
-				HumanAnnotationCompleted:   false,
-				MachineEvaluationCompleted: false,
-				ReviewCompleted:            false,
+			// 如果记录不存在，检查是否有人类标注
+			var hasHumanAnnotation bool
+			err = db.DB.QueryRow(`
+				SELECT EXISTS(
+					SELECT 1 FROM human_annotations
+					WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+				)
+			`, physicianID, taskID, username, trait).Scan(&hasHumanAnnotation)
+
+			if err != nil {
+				log.Println("检查人类标注记录错误:", err)
+				// 如果检查失败，返回默认进度
+				progress = models.TraitProgress{
+					PhysicianID:                physicianID,
+					TaskID:                     taskID,
+					Evaluator:                  username,
+					Trait:                      trait,
+					HumanAnnotationCompleted:   false,
+					MachineEvaluationCompleted: false,
+					ReviewCompleted:            false,
+				}
+			} else if hasHumanAnnotation {
+				// 如果有人类标注但没有进度记录，创建一个进度记录
+				log.Println("检测到人类标注但没有对应的进度记录，创建进度记录")
+
+				// 开始事务
+				tx, err := db.DB.Begin()
+				if err != nil {
+					log.Println("开始事务错误:", err)
+					// 返回默认进度，但标记人类标注已完成
+					progress = models.TraitProgress{
+						PhysicianID:                physicianID,
+						TaskID:                     taskID,
+						Evaluator:                  username,
+						Trait:                      trait,
+						HumanAnnotationCompleted:   true,
+						MachineEvaluationCompleted: false,
+						ReviewCompleted:            false,
+					}
+				} else {
+					// 插入新进度记录
+					_, err = tx.Exec(`
+						INSERT INTO trait_progress
+						(physician_id, task_id, evaluator, trait, human_annotation_completed, machine_evaluation_completed, review_completed, timestamp)
+						VALUES ($1, $2, $3, $4, true, false, false, $5)
+					`, physicianID, taskID, username, trait, time.Now())
+
+					if err != nil {
+						tx.Rollback()
+						log.Println("创建进度记录错误:", err)
+						// 返回默认进度，但标记人类标注已完成
+						progress = models.TraitProgress{
+							PhysicianID:                physicianID,
+							TaskID:                     taskID,
+							Evaluator:                  username,
+							Trait:                      trait,
+							HumanAnnotationCompleted:   true,
+							MachineEvaluationCompleted: false,
+							ReviewCompleted:            false,
+						}
+					} else {
+						// 提交事务
+						err = tx.Commit()
+						if err != nil {
+							log.Println("提交事务错误:", err)
+							// 返回默认进度，但标记人类标注已完成
+							progress = models.TraitProgress{
+								PhysicianID:                physicianID,
+								TaskID:                     taskID,
+								Evaluator:                  username,
+								Trait:                      trait,
+								HumanAnnotationCompleted:   true,
+								MachineEvaluationCompleted: false,
+								ReviewCompleted:            false,
+							}
+						} else {
+							// 查询新创建的记录
+							err = db.DB.QueryRow(`
+								SELECT id, physician_id, task_id, evaluator, trait, 
+								human_annotation_completed, machine_evaluation_completed, review_completed, timestamp
+								FROM trait_progress 
+								WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+							`, physicianID, taskID, username, trait).Scan(
+								&progress.ID, &progress.PhysicianID, &progress.TaskID, &progress.Evaluator,
+								&progress.Trait, &progress.HumanAnnotationCompleted, &progress.MachineEvaluationCompleted,
+								&progress.ReviewCompleted, &progress.Timestamp,
+							)
+
+							if err != nil {
+								log.Println("查询新创建的进度记录错误:", err)
+								// 返回默认进度，但标记人类标注已完成
+								progress = models.TraitProgress{
+									PhysicianID:                physicianID,
+									TaskID:                     taskID,
+									Evaluator:                  username,
+									Trait:                      trait,
+									HumanAnnotationCompleted:   true,
+									MachineEvaluationCompleted: false,
+									ReviewCompleted:            false,
+								}
+							}
+						}
+					}
+				}
+			} else {
+				// 如果没有人类标注记录，返回默认进度
+				progress = models.TraitProgress{
+					PhysicianID:                physicianID,
+					TaskID:                     taskID,
+					Evaluator:                  username,
+					Trait:                      trait,
+					HumanAnnotationCompleted:   false,
+					MachineEvaluationCompleted: false,
+					ReviewCompleted:            false,
+				}
 			}
 		} else {
-			// 如果是其他错误（比如表不存在），也返回默认进度
+			// 如果是其他错误，返回默认进度
 			log.Println("查询trait进度错误 (使用默认值):", err)
 			progress = models.TraitProgress{
 				PhysicianID:                physicianID,
@@ -343,6 +449,37 @@ func GetTraitProgress(c *gin.Context) {
 				MachineEvaluationCompleted: false,
 				ReviewCompleted:            false,
 			}
+		}
+	}
+
+	// 检查是否有任何一个条件下返回的进度的ID仍然为0，如果是，确保这是一个有效的默认对象
+	if progress.ID == 0 {
+		// 检查人类标注是否已完成
+		var hasHumanAnnotation bool
+		err = db.DB.QueryRow(`
+			SELECT EXISTS(
+				SELECT 1 FROM human_annotations
+				WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+			)
+		`, physicianID, taskID, username, trait).Scan(&hasHumanAnnotation)
+
+		if err == nil && hasHumanAnnotation {
+			// 确保标记为人类标注已完成
+			progress.HumanAnnotationCompleted = true
+		}
+
+		// 检查机器评价是否已完成
+		var hasMachineEvaluation bool
+		err = db.DB.QueryRow(`
+			SELECT EXISTS(
+				SELECT 1 FROM machine_annotation_evaluation
+				WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+			)
+		`, physicianID, taskID, username, trait).Scan(&hasMachineEvaluation)
+
+		if err == nil && hasMachineEvaluation {
+			// 确保标记为机器评价已完成
+			progress.MachineEvaluationCompleted = true
 		}
 	}
 
@@ -413,16 +550,43 @@ func SubmitTraitHumanAnnotation(c *gin.Context) {
 		return
 	}
 
-	// 更新trait进度
-	_, err = tx.Exec(`
-		UPDATE trait_progress 
-		SET human_annotation_completed = true, timestamp = $1
-		WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
-	`, time.Now(), physicianID, taskID, annotation.Evaluator, trait)
+	// 首先检查progress记录是否存在
+	var progressExists bool
+	err = tx.QueryRow(`
+		SELECT EXISTS(
+			SELECT 1 FROM trait_progress 
+			WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+		)
+	`, physicianID, taskID, annotation.Evaluator, trait).Scan(&progressExists)
 
 	if err != nil {
 		tx.Rollback()
-		log.Println("更新trait进度错误:", err)
+		log.Println("检查进度记录是否存在错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "检查进度记录出错"})
+		return
+	}
+
+	currentTime := time.Now()
+
+	if progressExists {
+		// 如果记录存在，更新它
+		_, err = tx.Exec(`
+			UPDATE trait_progress 
+			SET human_annotation_completed = true, timestamp = $1
+			WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
+		`, currentTime, physicianID, taskID, annotation.Evaluator, trait)
+	} else {
+		// 如果记录不存在，创建新记录
+		_, err = tx.Exec(`
+			INSERT INTO trait_progress 
+			(physician_id, task_id, evaluator, trait, human_annotation_completed, machine_evaluation_completed, review_completed, timestamp)
+			VALUES ($1, $2, $3, $4, true, false, false, $5)
+		`, physicianID, taskID, annotation.Evaluator, trait, currentTime)
+	}
+
+	if err != nil {
+		tx.Rollback()
+		log.Println("更新或创建trait进度错误:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新进度出错"})
 		return
 	}
@@ -556,16 +720,59 @@ func SubmitMachineAnnotationEvaluation(c *gin.Context) {
 		}
 	}
 
-	// 更新trait进度
-	_, err = tx.Exec(`
-		UPDATE trait_progress 
-		SET machine_evaluation_completed = true, timestamp = $1
-		WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
-	`, time.Now(), physicianID, taskID, evaluations[0].Evaluator, trait)
+	// 检查progress记录是否存在
+	var progressExists bool
+	err = tx.QueryRow(`
+		SELECT EXISTS(
+			SELECT 1 FROM trait_progress 
+			WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+		)
+	`, physicianID, taskID, evaluations[0].Evaluator, trait).Scan(&progressExists)
 
 	if err != nil {
 		tx.Rollback()
-		log.Println("更新trait进度错误:", err)
+		log.Println("检查进度记录是否存在错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "检查进度记录出错"})
+		return
+	}
+
+	currentTime := time.Now()
+
+	if progressExists {
+		// 如果记录存在，更新它
+		_, err = tx.Exec(`
+			UPDATE trait_progress 
+			SET machine_evaluation_completed = true, timestamp = $1
+			WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
+		`, currentTime, physicianID, taskID, evaluations[0].Evaluator, trait)
+	} else {
+		// 检查是否有人类标注记录
+		var hasHumanAnnotation bool
+		err = tx.QueryRow(`
+			SELECT EXISTS(
+				SELECT 1 FROM human_annotations
+				WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+			)
+		`, physicianID, taskID, evaluations[0].Evaluator, trait).Scan(&hasHumanAnnotation)
+
+		if err != nil {
+			tx.Rollback()
+			log.Println("检查人类标注记录错误:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "检查人类标注记录出错"})
+			return
+		}
+
+		// 如果记录不存在，创建新记录
+		_, err = tx.Exec(`
+			INSERT INTO trait_progress 
+			(physician_id, task_id, evaluator, trait, human_annotation_completed, machine_evaluation_completed, review_completed, timestamp)
+			VALUES ($1, $2, $3, $4, $5, true, false, $6)
+		`, physicianID, taskID, evaluations[0].Evaluator, trait, hasHumanAnnotation, currentTime)
+	}
+
+	if err != nil {
+		tx.Rollback()
+		log.Println("更新或创建trait进度错误:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新进度出错"})
 		return
 	}
@@ -709,16 +916,93 @@ func CompleteTraitReview(c *gin.Context) {
 		return
 	}
 
-	// 更新trait进度为完成
-	_, err = db.DB.Exec(`
-		UPDATE trait_progress 
-		SET review_completed = true, timestamp = $1
-		WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
-	`, time.Now(), physicianID, taskID, requestData.Evaluator, trait)
+	// 开始事务
+	tx, err := db.DB.Begin()
+	if err != nil {
+		log.Println("开始事务错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "数据库事务错误"})
+		return
+	}
+
+	// 检查progress记录是否存在
+	var progressExists bool
+	err = tx.QueryRow(`
+		SELECT EXISTS(
+			SELECT 1 FROM trait_progress 
+			WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+		)
+	`, physicianID, taskID, requestData.Evaluator, trait).Scan(&progressExists)
 
 	if err != nil {
-		log.Println("完成trait回顾错误:", err)
+		tx.Rollback()
+		log.Println("检查进度记录是否存在错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "检查进度记录出错"})
+		return
+	}
+
+	currentTime := time.Now()
+
+	if progressExists {
+		// 如果记录存在，更新它
+		_, err = tx.Exec(`
+			UPDATE trait_progress 
+			SET review_completed = true, timestamp = $1
+			WHERE physician_id = $2 AND task_id = $3 AND evaluator = $4 AND trait = $5
+		`, currentTime, physicianID, taskID, requestData.Evaluator, trait)
+	} else {
+		// 检查前置条件
+		var hasHumanAnnotation, hasMachineEvaluation bool
+
+		// 检查是否有人类标注记录
+		err = tx.QueryRow(`
+			SELECT EXISTS(
+				SELECT 1 FROM human_annotations
+				WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+			)
+		`, physicianID, taskID, requestData.Evaluator, trait).Scan(&hasHumanAnnotation)
+
+		if err != nil {
+			tx.Rollback()
+			log.Println("检查人类标注记录错误:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "检查人类标注记录出错"})
+			return
+		}
+
+		// 检查是否有机器评价记录
+		err = tx.QueryRow(`
+			SELECT EXISTS(
+				SELECT 1 FROM machine_annotation_evaluation
+				WHERE physician_id = $1 AND task_id = $2 AND evaluator = $3 AND trait = $4
+			)
+		`, physicianID, taskID, requestData.Evaluator, trait).Scan(&hasMachineEvaluation)
+
+		if err != nil {
+			tx.Rollback()
+			log.Println("检查机器评价记录错误:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "检查机器评价记录出错"})
+			return
+		}
+
+		// 如果记录不存在，创建新记录
+		_, err = tx.Exec(`
+			INSERT INTO trait_progress 
+			(physician_id, task_id, evaluator, trait, human_annotation_completed, machine_evaluation_completed, review_completed, timestamp)
+			VALUES ($1, $2, $3, $4, $5, $6, true, $7)
+		`, physicianID, taskID, requestData.Evaluator, trait, hasHumanAnnotation, hasMachineEvaluation, currentTime)
+	}
+
+	if err != nil {
+		tx.Rollback()
+		log.Println("更新或创建trait进度错误:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新进度出错"})
+		return
+	}
+
+	// 提交事务
+	err = tx.Commit()
+	if err != nil {
+		log.Println("提交事务错误:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "提交事务出错"})
 		return
 	}
 
