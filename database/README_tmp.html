@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>README.md</title>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+html,footer,header{
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Custom MD PDF CSS
+ */
+html,footer,header{
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+
+ }
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+<link rel="stylesheet" href="file:///Users/tianlixu/IdeaProjects/phyreview_annotator/R%3A%5C2.Travail%5C1.Enseignement%5CCours%5C_1.Outils%5C2.Developpement%5C1.SCSS%5Cmain.css" type="text/css"><link rel="stylesheet" href="file:///Users/tianlixu/IdeaProjects/phyreview_annotator/D%3A%5Crdaros%5CCours%5C_1.Outils%5C2.Developpement%5C1.SCSS%5Cmain.css" type="text/css">
+</head>
+
+<body>
+    <h1 id="database-structure-documentation">Database Structure Documentation</h1>
+<p>Database structure documentation for the Physician Personality Trait Annotation System.</p>
+<h2 id="database-overview">Database Overview</h2>
+<p>This system uses PostgreSQL as the main database, containing the following major tables:</p>
+<ul>
+<li><code>physicians</code> - Physician information table</li>
+<li><code>reviews</code> - Patient reviews table</li>
+<li><code>tasks</code> - Annotation tasks table</li>
+<li><code>model_annotations</code> - Model annotation results table</li>
+<li><code>human_annotations</code> - Human annotation results table</li>
+<li><code>machine_annotation_evaluations</code> - Human evaluations of machine annotations table</li>
+</ul>
+<hr>
+<h2 id="table-structure-details">Table Structure Details</h2>
+<h3 id="1-physicians--physician-information-table">1. <code>physicians</code> — Physician Information Table</h3>
+<p>Stores basic physician information and biographies.</p>
+<table>
+<thead>
+<tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL</td>
+<td>Primary key</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>phy_id</code></td>
+<td>BIGINT</td>
+<td>Physician original data unique ID</td>
+<td>100745676</td>
+</tr>
+<tr>
+<td><code>npi</code></td>
+<td>BIGINT</td>
+<td>National Provider Identifier</td>
+<td>1659371102</td>
+</tr>
+<tr>
+<td><code>first_name</code></td>
+<td>TEXT</td>
+<td>Physician first name</td>
+<td>ALINA</td>
+</tr>
+<tr>
+<td><code>last_name</code></td>
+<td>TEXT</td>
+<td>Physician last name</td>
+<td>GRIGORE</td>
+</tr>
+<tr>
+<td><code>gender</code></td>
+<td>TEXT</td>
+<td>Gender</td>
+<td>F</td>
+</tr>
+<tr>
+<td><code>credential</code></td>
+<td>TEXT</td>
+<td>Physician credential (e.g., MD)</td>
+<td>MD</td>
+</tr>
+<tr>
+<td><code>specialty</code></td>
+<td>TEXT</td>
+<td>Physician specialty</td>
+<td>Anesthesiology Physician</td>
+</tr>
+<tr>
+<td><code>practice_zip5</code></td>
+<td>TEXT</td>
+<td>Practice ZIP code</td>
+<td>89134</td>
+</tr>
+<tr>
+<td><code>business_zip5</code></td>
+<td>TEXT</td>
+<td>Business ZIP code</td>
+<td>25304</td>
+</tr>
+<tr>
+<td><code>biography_doc</code></td>
+<td>TEXT</td>
+<td>Biography (supports HTML format)</td>
+<td><code>&lt;p&gt;Dr. Grigore is...&lt;/p&gt;</code></td>
+</tr>
+<tr>
+<td><code>education_doc</code></td>
+<td>TEXT</td>
+<td>Education history (XML format)</td>
+<td><code>&lt;education&gt;Duke University...&lt;/education&gt;</code></td>
+</tr>
+<tr>
+<td><code>num_reviews</code></td>
+<td>INTEGER</td>
+<td>Number of reviews</td>
+<td>7</td>
+</tr>
+<tr>
+<td><code>doc_name</code></td>
+<td>TEXT</td>
+<td>Physician display name</td>
+<td>Dr. Alina Grigore</td>
+</tr>
+<tr>
+<td><code>zip3</code></td>
+<td>TEXT</td>
+<td>First 3 digits of ZIP code</td>
+<td>891</td>
+</tr>
+<tr>
+<td><code>zip2</code></td>
+<td>TEXT</td>
+<td>First 2 digits of ZIP code</td>
+<td>89</td>
+</tr>
+<tr>
+<td><code>zipcode</code></td>
+<td>TEXT</td>
+<td>Complete ZIP code</td>
+<td>89134</td>
+</tr>
+<tr>
+<td><code>state</code></td>
+<td>TEXT</td>
+<td>State</td>
+<td>NV</td>
+</tr>
+<tr>
+<td><code>region</code></td>
+<td>TEXT</td>
+<td>Regional distribution</td>
+<td>Mountain</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Special Notes</strong>:</p>
+<ul>
+<li><code>biography_doc</code>: Supports HTML tags, frontend will render accordingly</li>
+<li><code>education_doc</code>: Uses <code>&lt;education&gt;</code> XML tag format, frontend will parse automatically</li>
+</ul>
+<hr>
+<h3 id="2-reviews--patient-reviews-table">2. <code>reviews</code> — Patient Reviews Table</h3>
+<p>Stores patient reviews for physicians.</p>
+<table>
+<thead>
+<tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL</td>
+<td>Primary key</td>
+<td>223</td>
+</tr>
+<tr>
+<td><code>physician_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key, references physicians</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>review_index</code></td>
+<td>INTEGER</td>
+<td>Review number (#0, #1 ...)</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>source</code></td>
+<td>TEXT</td>
+<td>Source (Vitals, HG, etc.)</td>
+<td>Vitals</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td>TIMESTAMP</td>
+<td>Timestamp</td>
+<td>2025-06-05 23:30:18</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td>TEXT</td>
+<td>Review content</td>
+<td>I had an excellent experience...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Index Suggestions</strong>:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_reviews_physician_id <span class="hljs-keyword">ON</span> reviews(physician_id);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_reviews_date <span class="hljs-keyword">ON</span> reviews(<span class="hljs-built_in">date</span>);
+</div></code></pre>
+<hr>
+<h3 id="3-tasks--annotation-tasks-table">3. <code>tasks</code> — Annotation Tasks Table</h3>
+<p>Manages annotation task assignments and status.</p>
+<table>
+<thead>
+<tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL</td>
+<td>Primary key</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>physician_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key, references physicians</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>assigned_to</code></td>
+<td>TEXT</td>
+<td>Assigned annotator</td>
+<td>user001</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>TEXT</td>
+<td>Task status</td>
+<td>in_progress</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>TIMESTAMP</td>
+<td>Creation time</td>
+<td>2025-06-05 23:30:18</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>TIMESTAMP</td>
+<td>Update time</td>
+<td>2025-06-05 23:35:20</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Status Enum</strong>:</p>
+<ul>
+<li><code>pending</code> - Pending</li>
+<li><code>in_progress</code> - In Progress</li>
+<li><code>completed</code> - Completed</li>
+<li><code>cancelled</code> - Cancelled</li>
+</ul>
+<hr>
+<h3 id="4-modelannotations--model-annotation-results-table">4. <code>model_annotations</code> — Model Annotation Results Table</h3>
+<p>Stores AI model analysis results for physician personality traits.</p>
+<table>
+<thead>
+<tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL</td>
+<td>Primary key</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>physician_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key, references physicians</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>model_name</code></td>
+<td>TEXT</td>
+<td>Model name</td>
+<td>GPT-4</td>
+</tr>
+<tr>
+<td><code>trait</code></td>
+<td>TEXT</td>
+<td>Personality dimension</td>
+<td>Openness</td>
+</tr>
+<tr>
+<td><code>score</code></td>
+<td>TEXT</td>
+<td>Score result</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>consistency</code></td>
+<td>TEXT</td>
+<td>Model consistency description</td>
+<td>Very Consistent</td>
+</tr>
+<tr>
+<td><code>sufficiency</code></td>
+<td>TEXT</td>
+<td>Model evidence sufficiency desc.</td>
+<td>Sufficient</td>
+</tr>
+<tr>
+<td><code>evidence</code></td>
+<td>TEXT</td>
+<td>Original evidence text from model</td>
+<td>Based on the reviews...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Personality Trait Enum</strong>:</p>
+<ul>
+<li><code>Openness</code> - Openness</li>
+<li><code>Conscientiousness</code> - Conscientiousness</li>
+<li><code>Extraversion</code> - Extraversion</li>
+<li><code>Agreeableness</code> - Agreeableness</li>
+<li><code>Neuroticism</code> - Neuroticism</li>
+</ul>
+<p><strong>Score Enum</strong>:</p>
+<ul>
+<li><code>Low</code> - Low</li>
+<li><code>Moderate</code> - Moderate</li>
+<li><code>High</code> - High</li>
+</ul>
+<hr>
+<h3 id="5-humanannotations--human-annotation-results-table">5. <code>human_annotations</code> — Human Annotation Results Table</h3>
+<p>Stores human annotators' annotation results.</p>
+<table>
+<thead>
+<tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL</td>
+<td>Primary key</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>physician_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key, references physicians</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>evaluator</code></td>
+<td>TEXT</td>
+<td>Annotator username</td>
+<td>user001</td>
+</tr>
+<tr>
+<td><code>task_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key, references tasks</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>trait</code></td>
+<td>TEXT</td>
+<td>Personality dimension</td>
+<td>Openness</td>
+</tr>
+<tr>
+<td><code>score</code></td>
+<td>TEXT</td>
+<td>Score result</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>consistency</code></td>
+<td>TEXT</td>
+<td>Consistency evaluation</td>
+<td>Very Consistent</td>
+</tr>
+<tr>
+<td><code>sufficiency</code></td>
+<td>TEXT</td>
+<td>Evidence sufficiency evaluation</td>
+<td>Sufficient</td>
+</tr>
+<tr>
+<td><code>evidence</code></td>
+<td>TEXT</td>
+<td>Evidence text provided by annotator</td>
+<td>The patient reviews show...</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>TIMESTAMP</td>
+<td>Annotation time</td>
+<td>2025-06-05 23:30:18</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="6-machineannotationevaluations--machine-annotation-evaluation-table">6. <code>machine_annotation_evaluations</code> — Machine Annotation Evaluation Table</h3>
+<p>Stores human annotators' evaluations of AI model outputs.</p>
+<table>
+<thead>
+<tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>SERIAL</td>
+<td>Primary key</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>model_annotation_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key, references model_annotations</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>evaluator</code></td>
+<td>TEXT</td>
+<td>Evaluator username</td>
+<td>user001</td>
+</tr>
+<tr>
+<td><code>task_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key, references tasks</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>ranking</code></td>
+<td>INTEGER</td>
+<td>Model ranking (1 is best)</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>accuracy_score</code></td>
+<td>TEXT</td>
+<td>Accuracy evaluation</td>
+<td>Good</td>
+</tr>
+<tr>
+<td><code>comment</code></td>
+<td>TEXT</td>
+<td>Subjective evaluation text</td>
+<td>This model provides accurate...</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>TIMESTAMP</td>
+<td>Evaluation time</td>
+<td>2025-06-05 23:30:18</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Accuracy Score Enum</strong>:</p>
+<ul>
+<li><code>Excellent</code> - Excellent</li>
+<li><code>Good</code> - Good</li>
+<li><code>Fair</code> - Fair</li>
+<li><code>Poor</code> - Poor</li>
+</ul>
+<hr>
+<h2 id="relationship-diagram">Relationship Diagram</h2>
+<pre class="hljs"><code><div>physicians (1) ←→ (N) reviews
+    ↓
+tasks (1) ←→ (N) human_annotations
+    ↓
+physicians (1) ←→ (N) model_annotations
+    ↓
+model_annotations (1) ←→ (N) machine_annotation_evaluations
+</div></code></pre>
+<hr>
+<h2 id="database-initialization">Database Initialization</h2>
+<h3 id="create-database">Create Database</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">DATABASE</span> physicians;
+\c physicians;
+</div></code></pre>
+<h3 id="create-table-structure">Create Table Structure</h3>
+<pre class="hljs"><code><div><span class="hljs-comment">-- Physician information table</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> physicians (
+    <span class="hljs-keyword">id</span> <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    phy_id <span class="hljs-built_in">BIGINT</span>,
+    npi <span class="hljs-built_in">BIGINT</span> <span class="hljs-keyword">UNIQUE</span>,
+    first_name <span class="hljs-built_in">TEXT</span>,
+    last_name <span class="hljs-built_in">TEXT</span>,
+    gender <span class="hljs-built_in">TEXT</span>,
+    credential <span class="hljs-built_in">TEXT</span>,
+    specialty <span class="hljs-built_in">TEXT</span>,
+    practice_zip5 <span class="hljs-built_in">TEXT</span>,
+    business_zip5 <span class="hljs-built_in">TEXT</span>,
+    biography_doc <span class="hljs-built_in">TEXT</span>,
+    education_doc <span class="hljs-built_in">TEXT</span>,
+    num_reviews <span class="hljs-built_in">INTEGER</span>,
+    doc_name <span class="hljs-built_in">TEXT</span>,
+    zip3 <span class="hljs-built_in">TEXT</span>,
+    zip2 <span class="hljs-built_in">TEXT</span>,
+    zipcode <span class="hljs-built_in">TEXT</span>,
+    state <span class="hljs-built_in">TEXT</span>,
+    region <span class="hljs-built_in">TEXT</span>
+);
+
+<span class="hljs-comment">-- Reviews table</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> reviews (
+    <span class="hljs-keyword">id</span> <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    physician_id <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> physicians(<span class="hljs-keyword">id</span>),
+    review_index <span class="hljs-built_in">INTEGER</span>,
+    <span class="hljs-keyword">source</span> <span class="hljs-built_in">TEXT</span>,
+    <span class="hljs-built_in">date</span> <span class="hljs-built_in">TIMESTAMP</span>,
+    <span class="hljs-built_in">text</span> <span class="hljs-built_in">TEXT</span>
+);
+
+<span class="hljs-comment">-- Tasks table</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> tasks (
+    <span class="hljs-keyword">id</span> <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    physician_id <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> physicians(<span class="hljs-keyword">id</span>),
+    assigned_to <span class="hljs-built_in">TEXT</span>,
+    <span class="hljs-keyword">status</span> <span class="hljs-built_in">TEXT</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-string">'pending'</span>,
+    created_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">CURRENT_TIMESTAMP</span>,
+    updated_at <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">CURRENT_TIMESTAMP</span>
+);
+
+<span class="hljs-comment">-- Model annotations table</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> model_annotations (
+    <span class="hljs-keyword">id</span> <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    physician_id <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> physicians(<span class="hljs-keyword">id</span>),
+    model_name <span class="hljs-built_in">TEXT</span>,
+    trait <span class="hljs-built_in">TEXT</span>,
+    score <span class="hljs-built_in">TEXT</span>,
+    consistency <span class="hljs-built_in">TEXT</span>,
+    sufficiency <span class="hljs-built_in">TEXT</span>,
+    evidence <span class="hljs-built_in">TEXT</span>
+);
+
+<span class="hljs-comment">-- Human annotations table</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> human_annotations (
+    <span class="hljs-keyword">id</span> <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    physician_id <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> physicians(<span class="hljs-keyword">id</span>),
+    evaluator <span class="hljs-built_in">TEXT</span>,
+    task_id <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> tasks(<span class="hljs-keyword">id</span>),
+    trait <span class="hljs-built_in">TEXT</span>,
+    score <span class="hljs-built_in">TEXT</span>,
+    consistency <span class="hljs-built_in">TEXT</span>,
+    sufficiency <span class="hljs-built_in">TEXT</span>,
+    evidence <span class="hljs-built_in">TEXT</span>,
+    <span class="hljs-built_in">timestamp</span> <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">CURRENT_TIMESTAMP</span>
+);
+
+<span class="hljs-comment">-- Machine annotation evaluations table</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> machine_annotation_evaluations (
+    <span class="hljs-keyword">id</span> <span class="hljs-built_in">SERIAL</span> PRIMARY <span class="hljs-keyword">KEY</span>,
+    model_annotation_id <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> model_annotations(<span class="hljs-keyword">id</span>),
+    evaluator <span class="hljs-built_in">TEXT</span>,
+    task_id <span class="hljs-built_in">INTEGER</span> <span class="hljs-keyword">REFERENCES</span> tasks(<span class="hljs-keyword">id</span>),
+    ranking <span class="hljs-built_in">INTEGER</span>,
+    accuracy_score <span class="hljs-built_in">TEXT</span>,
+    <span class="hljs-keyword">comment</span> <span class="hljs-built_in">TEXT</span>,
+    <span class="hljs-built_in">timestamp</span> <span class="hljs-built_in">TIMESTAMP</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">CURRENT_TIMESTAMP</span>
+);
+</div></code></pre>
+<h3 id="create-indexes">Create Indexes</h3>
+<pre class="hljs"><code><div><span class="hljs-comment">-- Performance optimization indexes</span>
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_physicians_npi <span class="hljs-keyword">ON</span> physicians(npi);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_reviews_physician_id <span class="hljs-keyword">ON</span> reviews(physician_id);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_tasks_physician_id <span class="hljs-keyword">ON</span> tasks(physician_id);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_tasks_assigned_to <span class="hljs-keyword">ON</span> tasks(assigned_to);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_human_annotations_physician_id <span class="hljs-keyword">ON</span> human_annotations(physician_id);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_human_annotations_evaluator <span class="hljs-keyword">ON</span> human_annotations(evaluator);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_model_annotations_physician_id <span class="hljs-keyword">ON</span> model_annotations(physician_id);
+<span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">INDEX</span> idx_machine_evaluations_model_annotation_id <span class="hljs-keyword">ON</span> machine_annotation_evaluations(model_annotation_id);
+</div></code></pre>
+<hr>
+<h2 id="data-import">Data Import</h2>
+<h3 id="using-go-import-tool">Using Go Import Tool</h3>
+<pre class="hljs"><code><div><span class="hljs-built_in">cd</span> backend/cmd/import
+go run main.go
+</div></code></pre>
+<h3 id="using-python-etl-script">Using Python ETL Script</h3>
+<pre class="hljs"><code><div><span class="hljs-built_in">cd</span> database
+python etl.py
+</div></code></pre>
+<hr>
+<h2 id="query-examples">Query Examples</h2>
+<h3 id="get-complete-physician-information">Get Complete Physician Information</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">SELECT</span> p.*, 
+       <span class="hljs-keyword">COUNT</span>(r.id) <span class="hljs-keyword">as</span> review_count
+<span class="hljs-keyword">FROM</span> physicians p
+<span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">JOIN</span> reviews r <span class="hljs-keyword">ON</span> p.id = r.physician_id
+<span class="hljs-keyword">WHERE</span> p.npi = <span class="hljs-number">1659371102</span>
+<span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> p.id;
+</div></code></pre>
+<h3 id="get-annotation-progress">Get Annotation Progress</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">SELECT</span> 
+    p.doc_name,
+    t.assigned_to,
+    <span class="hljs-keyword">COUNT</span>(<span class="hljs-keyword">DISTINCT</span> ha.trait) <span class="hljs-keyword">as</span> completed_traits,
+    <span class="hljs-keyword">COUNT</span>(<span class="hljs-keyword">DISTINCT</span> ma.trait) <span class="hljs-keyword">as</span> total_traits
+<span class="hljs-keyword">FROM</span> physicians p
+<span class="hljs-keyword">JOIN</span> tasks t <span class="hljs-keyword">ON</span> p.id = t.physician_id
+<span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">JOIN</span> human_annotations ha <span class="hljs-keyword">ON</span> p.id = ha.physician_id 
+    <span class="hljs-keyword">AND</span> t.id = ha.task_id
+<span class="hljs-keyword">LEFT</span> <span class="hljs-keyword">JOIN</span> model_annotations ma <span class="hljs-keyword">ON</span> p.id = ma.physician_id
+<span class="hljs-keyword">WHERE</span> t.assigned_to = <span class="hljs-string">'user001'</span>
+<span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> p.id, p.doc_name, t.assigned_to;
+</div></code></pre>
+<h3 id="get-model-evaluation-statistics">Get Model Evaluation Statistics</h3>
+<pre class="hljs"><code><div><span class="hljs-keyword">SELECT</span> 
+    ma.model_name,
+    mae.accuracy_score,
+    <span class="hljs-keyword">COUNT</span>(*) <span class="hljs-keyword">as</span> evaluation_count,
+    <span class="hljs-keyword">AVG</span>(mae.ranking::<span class="hljs-built_in">numeric</span>) <span class="hljs-keyword">as</span> avg_ranking
+<span class="hljs-keyword">FROM</span> model_annotations ma
+<span class="hljs-keyword">JOIN</span> machine_annotation_evaluations mae <span class="hljs-keyword">ON</span> ma.id = mae.model_annotation_id
+<span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> ma.model_name, mae.accuracy_score
+<span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> ma.model_name, avg_ranking;
+</div></code></pre>
+<hr>
+<h2 id="backup-and-recovery">Backup and Recovery</h2>
+<h3 id="backup-database">Backup Database</h3>
+<pre class="hljs"><code><div>pg_dump physicians &gt; physicians_backup.sql
+</div></code></pre>
+<h3 id="restore-database">Restore Database</h3>
+<pre class="hljs"><code><div>psql physicians &lt; physicians_backup.sql
+</div></code></pre>
+<hr>
+<h2 id="performance-optimization-suggestions">Performance Optimization Suggestions</h2>
+<ol>
+<li><strong>Index Optimization</strong>: Create indexes for frequently queried fields</li>
+<li><strong>Partitioning</strong>: Consider time-based partitioning for large tables (e.g., reviews)</li>
+<li><strong>Connection Pooling</strong>: Use connection pooling to manage database connections</li>
+<li><strong>Query Optimization</strong>: Use EXPLAIN to analyze slow queries</li>
+<li><strong>Caching</strong>: Use Redis caching for hot data</li>
+</ol>
+<hr>
+<h2 id="data-migration">Data Migration</h2>
+<p>When upgrading database structure, refer to migration SQL scripts in the <code>backend/db/</code> directory:</p>
+<ul>
+<li><code>migration_new_workflow.sql</code> - New workflow migration</li>
+<li><code>rebuild_database.sql</code> - Rebuild database</li>
+<li><code>clean_database.sql</code> - Clean database</li>
+</ul>
+<hr>
+<h2 id="monitoring-and-maintenance">Monitoring and Maintenance</h2>
+<h3 id="regular-maintenance-tasks">Regular Maintenance Tasks</h3>
+<pre class="hljs"><code><div><span class="hljs-comment">-- Update table statistics</span>
+<span class="hljs-keyword">ANALYZE</span>;
+
+<span class="hljs-comment">-- Clean up unused data</span>
+VACUUM;
+
+<span class="hljs-comment">-- Rebuild indexes (if needed)</span>
+REINDEX DATABASE physicians;
+</div></code></pre>
+<h3 id="monitoring-queries">Monitoring Queries</h3>
+<pre class="hljs"><code><div><span class="hljs-comment">-- View current active connections</span>
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> pg_stat_activity <span class="hljs-keyword">WHERE</span> datname = <span class="hljs-string">'physicians'</span>;
+
+<span class="hljs-comment">-- View table sizes</span>
+<span class="hljs-keyword">SELECT</span> 
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||<span class="hljs-string">'.'</span>||tablename)) <span class="hljs-keyword">as</span> <span class="hljs-keyword">size</span>
+<span class="hljs-keyword">FROM</span> pg_tables 
+<span class="hljs-keyword">WHERE</span> schemaname = <span class="hljs-string">'public'</span>
+<span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> pg_total_relation_size(schemaname||<span class="hljs-string">'.'</span>||tablename) <span class="hljs-keyword">DESC</span>;
+</div></code></pre>
+<hr>
+<h2 id="version-history">Version History</h2>
+<h3 id="v120-current-version">v1.2.0 (Current Version)</h3>
+<ul>
+<li>✅ Added machine_annotation_evaluations table</li>
+<li>✅ Improved index structure</li>
+<li>✅ Optimized query performance</li>
+</ul>
+<h3 id="v110">v1.1.0</h3>
+<ul>
+<li>✅ Added tasks and human_annotations tables</li>
+<li>✅ Refactored model_annotations table structure</li>
+</ul>
+<h3 id="v100">v1.0.0</h3>
+<ul>
+<li>✅ Basic physicians and reviews table structure</li>
+</ul>
+
+</body>
+
+</html>
